@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Kodland Tutor Assistant",
+  "version": "1.1.0",
+  "description": "Automated WhatsApp tool for Kodland tutors to send welcome messages, weekly summaries, and class reminders to parents.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://bo.kodland.org/*",
+    "https://backoffice.kodland.org/*",
+    "https://web.whatsapp.com/*"
+  ],
+  "action": {
+    "default_title": "Kodland Tutor Assistant"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://bo.kodland.org/*"],
+      "js": ["early-auth-capture.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://bo.kodland.org/*"],
+      "js": ["open-wa-button.js", "send-credential-button.js", "group-students-info.js", "content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://web.whatsapp.com/*"],
+      "js": ["whatsapp-autopaste.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
+

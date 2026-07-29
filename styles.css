@@ -1,0 +1,799 @@
+.kodland-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
+  margin: 5px 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  z-index: 9999;
+  position: relative;
+}
+
+.kodland-wa-btn:hover {
+  background: linear-gradient(135deg, #20bd5a 0%, #0f7a6e 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+}
+
+.kodland-wa-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(37, 211, 102, 0.25);
+}
+
+.kodland-wa-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Botón Open WA - más minimalista */
+.kodland-open-btn {
+  background: linear-gradient(135deg, #128C7E 0%, #075E54 100%);
+  box-shadow: 0 2px 8px rgba(18, 140, 126, 0.25);
+}
+
+.kodland-open-btn:hover {
+  background: linear-gradient(135deg, #0f7a6e 0%, #064a42 100%);
+  box-shadow: 0 4px 12px rgba(18, 140, 126, 0.35);
+}
+
+/* Botón Falta a clase - color de alerta */
+.kodland-absence-btn {
+  background: linear-gradient(135deg, #ff5722 0%, #d84315 100%);
+  box-shadow: 0 2px 8px rgba(255, 87, 34, 0.25);
+}
+
+.kodland-absence-btn:hover {
+  background: linear-gradient(135deg, #e64a19 0%, #bf360c 100%);
+  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.35);
+}
+
+/* Botones que viven dentro de la barra superior compartida
+   (#kodland-broadcast-buttons), junto a "Aviso de clase" y el resto de
+   botones de difusión: configuración, exportar contactos, reporte de
+   calificación y link de WhatsApp del grupo. */
+.kodland-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.kodland-toolbar-btn:hover {
+  transform: translateY(-1px);
+}
+
+.kodland-toolbar-btn:active {
+  transform: translateY(0);
+}
+
+.kodland-toolbar-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Exportar contactos */
+.kodland-export-contacts-btn {
+  background: linear-gradient(135deg, #2196F3 0%, #1565C0 100%);
+}
+
+.kodland-export-contacts-btn:hover {
+  background: linear-gradient(135deg, #1976D2 0%, #0d47a1 100%);
+}
+
+/* Link de WhatsApp del grupo */
+.kodland-wa-group-link-btn {
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+}
+
+.kodland-wa-group-link-btn:hover {
+  background: linear-gradient(135deg, #20bd5a 0%, #0f7a6e 100%);
+}
+
+/* Reporte de calificación grupal */
+.kodland-grading-report-btn {
+  background: linear-gradient(135deg, #7e57c2 0%, #4527a0 100%);
+}
+
+.kodland-grading-report-btn:hover {
+  background: linear-gradient(135deg, #6a45b5 0%, #38208a 100%);
+}
+
+/* Configuración (siempre visible) */
+.kodland-settings-btn {
+  background: linear-gradient(135deg, #616161 0%, #424242 100%);
+  padding: 8px 10px;
+  font-size: 16px;
+}
+
+.kodland-settings-btn:hover {
+  background: linear-gradient(135deg, #757575 0%, #545454 100%);
+}
+
+/* Botón Reporte de tareas sin enviar */
+.kodland-task-report-btn {
+  background: linear-gradient(135deg, #00acc1 0%, #00838f 100%);
+  box-shadow: 0 2px 8px rgba(0, 172, 193, 0.25);
+}
+
+.kodland-task-report-btn:hover {
+  background: linear-gradient(135deg, #0097a7 0%, #006d75 100%);
+}
+
+/* Botón Grabación de la última clase (por estudiante) */
+.kodland-recording-btn {
+  background: linear-gradient(135deg, #ec407a 0%, #ad1457 100%);
+  box-shadow: 0 2px 8px rgba(236, 64, 122, 0.25);
+}
+
+.kodland-recording-btn:hover {
+  background: linear-gradient(135deg, #d81b60 0%, #880e4f 100%);
+}
+
+/* Contenedor de botones de difusión al grupo (fila fija arriba de la página) */
+.kodland-broadcast-buttons {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100000;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 92vw;
+}
+
+.kodland-broadcast-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #5c6bc0 0%, #3949ab 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(57, 73, 171, 0.4);
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.kodland-broadcast-btn:hover {
+  background: linear-gradient(135deg, #4b5aad 0%, #2c3a91 100%);
+  transform: translateY(-1px);
+}
+
+.kodland-broadcast-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Botón Send Credential - más minimalista */
+.kodland-send-btn {
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
+}
+
+.kodland-send-btn:hover {
+  background: linear-gradient(135deg, #20bd5a 0%, #0f7a6e 100%);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+}
+
+/* Contenedor de botones */
+#kodland-buttons-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+
+/* Botón de API para listado de estudiantes */
+.kodland-api-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  z-index: 10;
+  position: relative;
+}
+
+.kodland-api-btn:hover {
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(33, 150, 243, 0.4);
+}
+
+.kodland-api-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(33, 150, 243, 0.3);
+}
+
+.kodland-api-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.kodland-api-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Botones pequeños junto al nombre del estudiante */
+.kodland-student-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+  position: relative;
+  overflow: visible !important; /* allow tooltips to escape clipped parents */
+  z-index: 1000000;
+}
+
+.kodland-student-buttons button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: none;
+  background-color: #25D366;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: visible !important;
+}
+
+.kodland-student-buttons button:hover {
+  background-color: #20bd5a;
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.4);
+}
+
+.kodland-student-buttons button:active {
+  transform: scale(0.95);
+}
+
+.kodland-student-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.kodland-student-buttons button svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Tooltip styles for buttons */
+.kodland-student-buttons button[title] {
+  position: relative;
+}
+
+.kodland-student-buttons button[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%; /* start of tooltip anchored at center of button */
+  transform: translateX(0);
+  margin-bottom: 5px;
+  padding: 4px 8px;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 2147483647; /* ensure tooltip renders above all */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.kodland-student-buttons button[title]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(0);
+  margin-bottom: -1px;
+  border: 4px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  z-index: 2147483647;
+}
+
+/* Modal styles */
+.kodland-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.kodland-modal-content {
+  background: #ffffff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22), 0 2px 8px rgba(15, 23, 42, 0.08);
+  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.kodland-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.kodland-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.kodland-refresh-btn {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.kodland-refresh-btn:hover:not(:disabled) {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.kodland-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kodland-weekly-summary-btn {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kodland-weekly-summary-btn:hover {
+  background: #25D366;
+  border-color: #25D366;
+  color: #ffffff;
+}
+
+.kodland-schedule-btn {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kodland-schedule-btn:hover {
+  background: #2196F3;
+  border-color: #2196F3;
+  color: #ffffff;
+}
+
+.kodland-refresh-btn.loading {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.kodland-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.kodland-modal-close {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.kodland-modal-close:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.kodland-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.kodland-module-section {
+  margin-bottom: 32px;
+}
+
+.kodland-module-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #25D366;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #25D366;
+}
+
+.kodland-lessons-container {
+  display: grid;
+  gap: 16px;
+}
+
+.kodland-lesson-card {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.kodland-lesson-header {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.kodland-tasks-section {
+  margin-top: 16px;
+}
+
+.kodland-tasks-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kodland-class-tasks h4 {
+  color: #2196F3;
+}
+
+.kodland-homework-tasks h4 {
+  color: #FF9800;
+}
+
+.kodland-tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kodland-task-item {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #eef0f3;
+  border-left: 3px solid #d1d5db;
+}
+
+.kodland-task-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.kodland-task-name {
+  flex: 1;
+  font-size: 14px;
+  color: #374151;
+  word-break: break-word;
+}
+
+.kodland-task-status {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.kodland-task-status.completed {
+  background-color: #4caf50;
+  color: #ffffff;
+}
+
+.kodland-task-status.pending {
+  background-color: #ff9800;
+  color: #ffffff;
+}
+
+.kodland-no-tasks {
+  color: #9ca3af;
+  font-size: 14px;
+  font-style: italic;
+  margin: 8px 0;
+}
+
+/* Scrollbar styling for modal */
+.kodland-modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.kodland-modal-body::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.kodland-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.kodland-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Filter bar styles */
+.kodland-filter-bar {
+  padding: 16px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: #f9fafb;
+  flex-shrink: 0;
+}
+
+.kodland-filter-btn {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.kodland-filter-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.kodland-filter-btn.active {
+  background: #25D366;
+  border-color: #25D366;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.kodland-filter-count {
+  background: #eef2f7;
+  color: #374151;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
+}
+
+.kodland-filter-btn.active .kodland-filter-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Task status styles */
+.kodland-task-status.submitted {
+  background-color: #2196F3;
+  color: #ffffff;
+}
+
+.kodland-task-status.not-submitted {
+  background-color: #ff5722;
+  color: #ffffff;
+}
+
+.kodland-task-status.submitted-late {
+  background-color: #e67e22;
+  color: #ffffff;
+}
+
+.kodland-task-status.not-graded {
+  background-color: #9e9e9e;
+  color: #ffffff;
+}
+
+.kodland-task-grade {
+  color: #888;
+  font-size: 12px;
+  font-weight: normal;
+  margin-left: 4px;
+}
+
+/* Task link */
+.kodland-task-link {
+  color: #25D366;
+  font-size: 14px;
+  text-decoration: none;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.kodland-task-link:hover {
+  color: #1ebe5b;
+  border-color: #1ebe5b;
+  background: rgba(37, 211, 102, 0.08);
+}
+
+/* ---------------------------------------------------------------------
+   Settings modal & grading report modal: back to their original dark
+   theme. These two reuse the general .kodland-modal-content styling
+   (now light, see above), but the settings modal in particular builds
+   its inputs/textareas with dark colors written directly inline
+   (background:#1e1e1e; color:#fff), so lightening the shell around them
+   left dark boxes floating in a white modal. Scoped by ID so the rest
+   of the app (e.g. the per-student lessons/tasks modal) stays light.
+--------------------------------------------------------------------- */
+#kodland-settings-modal,
+#kodland-grading-report-modal {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+#kodland-settings-modal .kodland-modal-content,
+#kodland-grading-report-modal .kodland-modal-content {
+  background: #1e1e1e;
+  color: #ffffff;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+#kodland-settings-modal .kodland-modal-header,
+#kodland-grading-report-modal .kodland-modal-header {
+  border-bottom: 1px solid #333;
+}
+
+#kodland-settings-modal .kodland-modal-header h2,
+#kodland-grading-report-modal .kodland-modal-header h2 {
+  color: #ffffff;
+}
+
+#kodland-settings-modal .kodland-modal-close,
+#kodland-grading-report-modal .kodland-modal-close {
+  color: #ffffff;
+}
+
+#kodland-settings-modal .kodland-modal-close:hover,
+#kodland-grading-report-modal .kodland-modal-close:hover {
+  background-color: #333;
+  color: #ffffff;
+}
+
+#kodland-grading-report-modal .kodland-lesson-card {
+  background: #2a2a2a;
+  border: 1px solid #333;
+}
+
+#kodland-grading-report-modal .kodland-lesson-header {
+  color: #ffffff;
+  border-bottom: 1px solid #444;
+}
+
+#kodland-grading-report-modal .kodland-task-item {
+  background: #1e1e1e;
+  border: none;
+  border-left: 3px solid #444;
+}
+
+#kodland-grading-report-modal .kodland-task-name {
+  color: #e0e0e0;
+}
+
+#kodland-grading-report-modal .kodland-no-tasks {
+  color: #888;
+}
+
+#kodland-settings-modal .kodland-modal-body::-webkit-scrollbar-track,
+#kodland-grading-report-modal .kodland-modal-body::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+#kodland-settings-modal .kodland-modal-body::-webkit-scrollbar-thumb,
+#kodland-grading-report-modal .kodland-modal-body::-webkit-scrollbar-thumb {
+  background: #444;
+}
+
+#kodland-settings-modal .kodland-modal-body::-webkit-scrollbar-thumb:hover,
+#kodland-grading-report-modal .kodland-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
