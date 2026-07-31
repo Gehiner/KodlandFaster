@@ -26,7 +26,7 @@
     },
     {
       "matches": ["https://bo.kodland.org/*"],
-      "js": ["open-wa-button.js", "send-credential-button.js", "group-students-info.js", "content.js"],
+      "js": ["open-wa-button.js", "send-credential-button.js", "send-me-credential-button.js", "group-students-info.js", "content.js"],
       "css": ["styles.css"],
       "run_at": "document_idle"
     },
