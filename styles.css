@@ -797,3 +797,14 @@
   background: #555;
 }
 
+/* Botón Send ME Credential (Minecraft Education) - verde/marrón distinto
+   al de Send Credential normal, para no confundirlos de un vistazo */
+.kodland-send-me-btn {
+  background: linear-gradient(135deg, #4CAF50 0%, #33691E 100%);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.25);
+}
+
+.kodland-send-me-btn:hover {
+  background: linear-gradient(135deg, #43A047 0%, #2b5a17 100%);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.35);
+}
