@@ -1,0 +1,19 @@
+# --- Calificador (Python) ---
+# Configuración local y secretos: NO subir
+calificador/config.json
+calificador/ia_config.json
+
+# Datos generados (contienen información de alumnos): NO subir
+calificador/depuracion/
+calificador/registros/
+
+# Caché y temporales de Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Sistema operativo
+Thumbs.db
+.DS_Store

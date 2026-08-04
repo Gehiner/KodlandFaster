@@ -1,0 +1,27 @@
+{
+  "bien": [
+    "¡Excelente trabajo, {nombre}! 🎉 Tu código hace justo lo que pedía la tarea. ¡Sigue así!",
+    "¡Muy bien, {nombre}! 👏 Tu solución está correcta y bien escrita. ¡Felicitaciones!",
+    "¡Genial, {nombre}! ✨ Resolviste la tarea tal como se esperaba. ¡Buen trabajo!"
+  ],
+  "con_detalles": [
+    "¡Buen trabajo, {nombre}! 💪 Tu tarea está aprobada. Un consejo para mejorarla: {detalle}.",
+    "¡Bien hecho, {nombre}! 👍 Ya quedó calificada. Para la próxima, {detalle}."
+  ],
+  "sintaxis": [
+    "¡Buen intento, {nombre}! 💪 Tu tarea quedó calificada, pero ojo: tu código tiene un error de sintaxis ({detalle}). Revísalo para que corra perfecto.",
+    "¡Gracias por tu entrega, {nombre}! Quedó calificada 👍. Detalle a revisar: hay un error de sintaxis ({detalle})."
+  ],
+  "neutro": [
+    "¡Gracias por tu entrega, {nombre}! 🙌 Ya quedó calificada. Compárala con la solución de la tarea para ver otro enfoque 😊",
+    "¡Buen trabajo, {nombre}! 👍 Tarea calificada. Si quieres, revisa la solución del curso para comparar ideas."
+  ],
+  "sin_codigo": [
+    "¡Gracias por tu entrega, {nombre}! 🙌 ¡Buen trabajo, sigue así!",
+    "¡Muy bien, {nombre}! 👏 Tu tarea quedó revisada y calificada. ¡Ánimo con la siguiente!"
+  ],
+  "incompleto": [
+    "¡Gracias por tu entrega, {nombre}! 🙌 Aunque no encuentro tu código completo en la respuesta. Envíalo por el chat cuando puedas y así te doy una mejor revisión. ¡Tú puedes! 💪",
+    "¡Hola, {nombre}! Recibí tu entrega, pero parece que el código falta o está incompleto. Mándalo completo cuando puedas para revisarlo mejor 😊"
+  ]
+}

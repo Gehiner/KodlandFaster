@@ -1,0 +1,7 @@
+{
+  "_ayuda": "Copia este archivo como 'ia_config.json' y pega tu clave GRATIS de Groq (https://console.groq.com/keys) en api_key. Para usar Gemini u otro proveedor, cambia endpoint y modelo.",
+  "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+  "api_key": "PEGA_AQUI_TU_CLAVE_DE_GROQ",
+  "modelo": "llama-3.3-70b-versatile",
+  "temperatura": 0.4
+}
