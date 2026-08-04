@@ -143,6 +143,17 @@ del panel de profesores, reduciendo de horas a minutos un proceso manual.
 > (`depuracion/`, `registros/`) se excluyen del repositorio (ver `.gitignore`)
 > porque contienen datos personales o credenciales.
 
+## Integración con la extensión (opcional)
+
+Puedes lanzar el calificador **desde los botones de la extensión**, sin abrir los
+`.bat` a mano. Se usa **Native Messaging** de Chrome: un "puente" local en Python
+que la extensión invoca enviándole solo una etiqueta (`simular`, `calificar`, …);
+el puente decide qué `.bat` ejecutar según una lista blanca. Todo en tu PC, sin
+internet, y la extensión nunca envía comandos ni rutas.
+
+Instálalo una vez con `calificador/puente/instalar_puente.bat`. Guía completa en
+[`calificador/puente/README_PUENTE.md`](calificador/puente/README_PUENTE.md).
+
 ---
 
 ## Licencia

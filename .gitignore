@@ -7,6 +7,11 @@ calificador/ia_config.json
 calificador/depuracion/
 calificador/registros/
 
+# Puente (Native Messaging): el manifest generado tiene rutas de tu máquina
+# y el ID de tu extensión; el log es local. Se suben solo los .example y scripts.
+calificador/puente/com.kodland.puente.json
+calificador/puente/puente.log
+
 # Caché y temporales de Python
 __pycache__/
 *.pyc

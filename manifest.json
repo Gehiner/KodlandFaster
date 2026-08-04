@@ -4,7 +4,8 @@
   "version": "1.1.0",
   "description": "Automated WhatsApp tool for Kodland tutors to send welcome messages, weekly summaries, and class reminders to parents.",
   "permissions": [
-    "storage"
+    "storage",
+    "nativeMessaging"
   ],
   "host_permissions": [
     "https://bo.kodland.org/*",
@@ -26,7 +27,7 @@
     },
     {
       "matches": ["https://bo.kodland.org/*"],
-      "js": ["open-wa-button.js", "send-credential-button.js", "send-me-credential-button.js", "group-students-info.js", "content.js"],
+      "js": ["open-wa-button.js", "send-credential-button.js", "send-me-credential-button.js", "group-students-info.js", "calificador-buttons.js", "content.js"],
       "css": ["styles.css"],
       "run_at": "document_idle"
     },

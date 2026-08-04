@@ -1,0 +1,9 @@
+{
+  "name": "com.kodland.puente",
+  "description": "Puente local para el calificador de Kodland",
+  "path": "SE_COMPLETA_AL_INSTALAR",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://ID_DE_LA_EXTENSION/"
+  ]
+}

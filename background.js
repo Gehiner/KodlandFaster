@@ -38,3 +38,24 @@ function applyIcons() {
 chrome.runtime.onInstalled.addListener(applyIcons);
 chrome.runtime.onStartup.addListener(applyIcons);
 
+// --- Puente con el calificador de Python (Native Messaging) ---
+// Los content scripts no pueden hablar directamente con un host nativo, así que
+// nos envían la etiqueta de acción y nosotros la reenviamos al puente local.
+const NOMBRE_PUENTE = 'com.kodland.puente';
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (!msg || msg.tipo !== 'calificador') return;  // no es para nosotros
+  try {
+    chrome.runtime.sendNativeMessage(NOMBRE_PUENTE, { action: msg.action }, (respuesta) => {
+      if (chrome.runtime.lastError) {
+        sendResponse({ ok: false, error: chrome.runtime.lastError.message });
+      } else {
+        sendResponse(respuesta || { ok: false, error: 'El puente no respondió.' });
+      }
+    });
+  } catch (e) {
+    sendResponse({ ok: false, error: String(e) });
+  }
+  return true;  // la respuesta llega de forma asíncrona
+});
+
