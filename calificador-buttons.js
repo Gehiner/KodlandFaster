@@ -116,3 +116,32 @@
     if (++intentos > 10) clearInterval(t);
   }, 2000);
 })();
+
+window.KodlandCalificador = {
+
+    ejecutar(action) {
+
+        return new Promise((resolve, reject) => {
+
+            chrome.runtime.sendMessage(
+                {
+                    tipo: "calificador",
+                    action
+                },
+                (resp) => {
+
+                    if (chrome.runtime.lastError) {
+                        reject(chrome.runtime.lastError);
+                        return;
+                    }
+
+                    resolve(resp);
+
+                }
+            );
+
+        });
+
+    }
+
+};

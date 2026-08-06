@@ -23,7 +23,7 @@
     {
       "matches": ["https://bo.kodland.org/*"],
       "js": ["early-auth-capture.js"],
-      "run_at": "document_start"
+      "run_at": "document_start"  
     },
     {
       "matches": ["https://bo.kodland.org/*"],
@@ -34,6 +34,11 @@
     {
       "matches": ["https://web.whatsapp.com/*"],
       "js": ["whatsapp-autopaste.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://bo.kodland.org/teachers/*"],
+      "js": ["teacher-page-buttons.js"],
       "run_at": "document_idle"
     }
   ]

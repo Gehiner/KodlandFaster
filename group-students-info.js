@@ -3321,6 +3321,7 @@ function showGroupGradingReportModal(report) {
     <div class="kodland-modal-content">
       <div class="kodland-modal-header">
         <h2>📊 Reporte de calificación del grupo (${totalPending} pendientes en total)</h2>
+        <button id="kodland-calificar-todo-btn" class="kodland-toolbar-btn">✅ Calificar</button>
         <button class="kodland-modal-close">&times;</button>
       </div>
       <div class="kodland-modal-body">
@@ -3332,6 +3333,24 @@ function showGroupGradingReportModal(report) {
   document.body.appendChild(modal);
   modal.querySelector('.kodland-modal-close').addEventListener('click', () => modal.remove());
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+  // kodland-calificar-todo-btn
+  modal.querySelector('#kodland-calificar-todo-btn')
+  .addEventListener('click', async () => {
+
+      try {
+
+          const respuesta =
+              await window.KodlandCalificador.ejecutar("calificar");
+
+          console.log(respuesta);
+
+      } catch (e) {
+
+          console.error(e);
+
+      }
+
+  });
 }
 
 // All floating action buttons (broadcast + settings + export + grading

@@ -808,3 +808,13 @@
   background: linear-gradient(135deg, #43A047 0%, #2b5a17 100%);
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.35);
 }
+
+/*kodland-calificar-todo-btn*/
+.kodland-modal-content .kodland-modal-header #kodland-calificar-todo-btn, .kodland-toolbar-btn-calificar{  
+  background: linear-gradient(90deg, #00d2ff 0%, #3a47d5 100%) ;
+}
+.kodland-modal-content .kodland-modal-header #kodland-calificar-todo-btn:hover, .kodland-toolbar-btn-calificar:hover {
+  background: linear-gradient(90deg, #d53369 0%, #daae51 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(252, 70, 107, 0.35);
+}
