@@ -71,6 +71,7 @@ URL_PROFES = None  # se completa al arrancar, según la configuración
 
 DIR_BASE = Path(__file__).resolve().parent
 DIR_PERFIL = Path.home() / ".kodland_calificador" / "perfil_chrome"
+RUTA_SESION = Path.home() / ".kodland_calificador" / "sesion.json"
 DIR_DEBUG = DIR_BASE / "depuracion"
 DIR_REGISTROS = DIR_BASE / "registros"
 RUTA_CONFIG = DIR_BASE / "config.json"
@@ -424,11 +425,97 @@ def codigo_leccion(texto):
 
 # ------------------------------ navegación -------------------------------
 
+def restaurar_sesion(ctx):
+    """Reinyecta la sesión guardada (COOKIES) para no iniciar sesión de nuevo.
+
+    La sesión de Kodland vive en una COOKIE de sesión, que Chrome borra al cerrar
+    el navegador (por eso pedía login cada vez, incluso con el perfil persistente).
+    Aquí volvemos a poner esas cookies al arrancar, con caducidad, así inicias
+    sesión una vez y las próximas veces entra solo. Devuelve True si restauró algo.
+    """
+    try:
+        if not RUTA_SESION.exists():
+            return False
+        datos = json.loads(RUTA_SESION.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+    hecho = False
+
+    limpias = []
+    for c in (datos.get("cookies") or []):
+        try:
+            cc = {"name": c["name"], "value": c["value"],
+                  "domain": c["domain"], "path": c.get("path", "/")}
+        except Exception:
+            continue
+        if c.get("httpOnly"):
+            cc["httpOnly"] = True
+        if c.get("secure"):
+            cc["secure"] = True
+        if c.get("sameSite") in ("Strict", "Lax", "None"):
+            cc["sameSite"] = c["sameSite"]
+        exp = c.get("expires")
+        cc["expires"] = exp if (isinstance(exp, (int, float)) and exp > 0) else (time.time() + 30 * 24 * 3600)
+        limpias.append(cc)
+    if limpias:
+        try:
+            ctx.add_cookies(limpias)
+            hecho = True
+        except Exception:
+            for cc in limpias:  # si alguna falla, añadir el resto una por una
+                try:
+                    ctx.add_cookies([cc]); hecho = True
+                except Exception:
+                    pass
+
+    # el storage no trae la sesión, pero lo restauramos por si acaso (no estorba)
+    ss = json.dumps(datos.get("session") or {}, ensure_ascii=False)
+    ls = json.dumps(datos.get("local") or {}, ensure_ascii=False)
+    if ss != "{}" or ls != "{}":
+        script = (
+            "(() => { try {"
+            " if (location.hostname !== 'bo.kodland.org') return;"
+            " var S = " + ss + "; for (var k in S) { if (sessionStorage.getItem(k)===null) sessionStorage.setItem(k, S[k]); }"
+            " var L = " + ls + "; for (var k in L) { if (localStorage.getItem(k)===null) localStorage.setItem(k, L[k]); }"
+            " } catch (e) {} })();"
+        )
+        try:
+            ctx.add_init_script(script); hecho = True
+        except Exception:
+            pass
+    return hecho
+
+
+def guardar_sesion(page):
+    """Guarda las cookies (y el storage) de la sesión para reutilizarla la próxima vez."""
+    try:
+        if "bo.kodland.org" not in (page.url or ""):
+            return
+        cookies = page.context.cookies()   # incluye las httpOnly de sesión
+        storage = page.evaluate(
+            "() => {"
+            " var s={}, l={};"
+            " for (var i=0;i<sessionStorage.length;i++){var k=sessionStorage.key(i); s[k]=sessionStorage.getItem(k);}"
+            " for (var i=0;i<localStorage.length;i++){var k=localStorage.key(i); l[k]=localStorage.getItem(k);}"
+            " return {session:s, local:l};"
+            "}"
+        )
+        datos = {"cookies": cookies,
+                 "session": storage.get("session", {}),
+                 "local": storage.get("local", {})}
+        RUTA_SESION.parent.mkdir(parents=True, exist_ok=True)
+        RUTA_SESION.write_text(json.dumps(datos, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
+
+
 def esperar_sesion(page):
     """Va al panel de profesores; si hace falta login, espera a que el usuario lo haga."""
     page.goto(URL_PROFES, wait_until="domcontentloaded")
     time.sleep(3)
     if page.locator("a[href*='/groups/']").count() > 0:
+        log("Sesión lista (no hizo falta iniciar sesión de nuevo).")
+        guardar_sesion(page)
         return
     print()
     print("=" * 62)
@@ -443,6 +530,7 @@ def esperar_sesion(page):
         try:
             if page.locator("a[href*='/groups/']").count() > 0:
                 log("Sesión detectada, continuamos.")
+                guardar_sesion(page)   # guardarla para no re-loguear la próxima vez
                 time.sleep(1)
                 return
             # si el login ya terminó y quedó en otra página del backoffice,
@@ -2458,6 +2546,10 @@ def main():
             ctx.on("page", instalar_captura)
         except Exception:
             pass
+
+        # reutilizar la sesión guardada (si existe) para no pedir login cada vez
+        if restaurar_sesion(ctx):
+            log("Reutilizaré tu sesión anterior (si sigue válida).")
 
         try:
             esperar_sesion(page)

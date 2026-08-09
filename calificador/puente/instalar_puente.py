@@ -21,6 +21,12 @@ import os
 import re
 import sys
 
+# Salida robusta: evita que un símbolo raro rompa la consola de Windows.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 try:
     import winreg
 except ImportError:
@@ -42,7 +48,7 @@ CLAVES_REGISTRO = {
 def pedir_id():
     if len(sys.argv) > 1:
         return sys.argv[1].strip()
-    print("Pega el ID de tu extensión (chrome://extensions → Modo desarrollador):")
+    print("Pega el ID de tu extension (chrome://extensions -> Modo desarrollador):")
     return input("  ID: ").strip()
 
 
@@ -53,8 +59,8 @@ def main():
 
     ext_id = pedir_id()
     if not re.fullmatch(r"[a-p]{32}", ext_id):
-        print(f"\n⚠ El ID '{ext_id}' no tiene el formato habitual (32 letras a-p).")
-        print("  Continúo de todos modos, pero revísalo si el puente no conecta.")
+        print(f"\n[!] El ID '{ext_id}' no tiene el formato habitual (32 letras a-p).")
+        print("    Continuo de todos modos, pero revisalo si el puente no conecta.")
 
     # 1) Escribir el manifest del host con rutas reales
     manifest = {
@@ -66,23 +72,28 @@ def main():
     }
     with open(RUTA_MANIFEST, "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, ensure_ascii=False, indent=2)
-    print(f"\n✔ Manifest escrito: {RUTA_MANIFEST}")
-    print(f"   path      -> {RUTA_BAT}")
-    print(f"   extensión -> {ext_id}")
+    print(f"\n[OK] Manifest escrito: {RUTA_MANIFEST}")
+    print(f"     path      -> {RUTA_BAT}")
+    print(f"     extension -> {ext_id}")
 
     # 2) Registrar en Chrome y Edge (HKCU: solo tu usuario, no requiere admin)
+    ok = 0
     for navegador, base in CLAVES_REGISTRO.items():
         try:
             clave = winreg.CreateKey(winreg.HKEY_CURRENT_USER, base + "\\" + NOMBRE_HOST)
             winreg.SetValueEx(clave, None, 0, winreg.REG_SZ, RUTA_MANIFEST)
             winreg.CloseKey(clave)
-            print(f"✔ Registrado para {navegador}")
+            print(f"[OK] Registrado para {navegador}")
+            ok += 1
         except Exception as e:
-            print(f"⚠ No se pudo registrar para {navegador}: {e}")
+            print(f"[!] No se pudo registrar para {navegador}: {e}")
 
-    print("\n✅ Puente instalado.")
-    print("   Siguiente paso: recarga la extensión en chrome://extensions y")
-    print("   prueba el botón 'Probar puente' en la página de Kodland.")
+    if ok:
+        print("\n[LISTO] Puente instalado.")
+        print("   Siguiente paso: cierra Chrome por completo, vuelve a abrirlo y")
+        print("   prueba el boton 'Probar puente' en la pagina de Kodland.")
+    else:
+        print("\n[X] No se pudo registrar en ningun navegador.")
 
 
 if __name__ == "__main__":
