@@ -1016,6 +1016,8 @@ REX_API_PROGRESO = re.compile(r"/students/(\d+)/get_progress_by_task/(\d+)/")
 REX_API_TAREA = re.compile(r"/api/v\d+/tasks/(\d+)/(?:\?|$)")
 # la página de calificación vive en learn.kodland.org/es/task/<tarea>/check/<id>
 REX_URL_CHECK = re.compile(r"/task/(\d+)/check/(\d+)")
+# formato alternativo ("old design"): /check/student_<id>/lesson_<id>/task_<id>
+REX_URL_CHECK2 = re.compile(r"/check/student_(\d+)/lesson_(\d+)/task_(\d+)")
 
 PAGINA_PRINCIPAL = None  # la pestaña de bo.kodland.org (sesión buena para la API)
 
@@ -1401,6 +1403,11 @@ def ia_configurada(cfg=None):
     return bool(clave) and "PEGA" not in clave.upper()
 
 
+# Consumo acumulado de la IA en esta ejecución (para el resumen final).
+IA_USO = {"tokens": 0, "llamadas": 0, "restante_tokens": None,
+          "limite_tokens": None, "restante_solicitudes": None, "reset_tokens": None}
+
+
 def _http_post_json(url, headers, payload, timeout=45):
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=data, method="POST")
@@ -1411,14 +1418,20 @@ def _http_post_json(url, headers, payload, timeout=45):
         req.add_header(k, v)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return resp.status, json.loads(resp.read().decode("utf-8"))
+            hdrs = {k.lower(): v for k, v in resp.getheaders()}
+            return resp.status, json.loads(resp.read().decode("utf-8")), hdrs
     except urllib.error.HTTPError as e:
+        hdrs = {}
         try:
-            return e.code, json.loads(e.read().decode("utf-8"))
+            hdrs = {k.lower(): v for k, v in e.headers.items()}
         except Exception:
-            return e.code, {"error": str(e)}
+            pass
+        try:
+            return e.code, json.loads(e.read().decode("utf-8")), hdrs
+        except Exception:
+            return e.code, {"error": str(e)}, hdrs
     except Exception as e:
-        return -1, {"error": str(e)}
+        return -1, {"error": str(e)}, {}
 
 
 def _extraer_json(texto):
@@ -1450,8 +1463,21 @@ def _llm_chat(cfg, system, user):
                      {"role": "user", "content": user}],
         "response_format": {"type": "json_object"},
     }
-    status, cuerpo = _http_post_json(cfg.get("endpoint", ""), headers, payload)
+    status, cuerpo, hdrs = _http_post_json(cfg.get("endpoint", ""), headers, payload)
     if status == 200 and isinstance(cuerpo, dict):
+        # contabilizar tokens consumidos y lo que queda (cabeceras de rate limit)
+        try:
+            uso = cuerpo.get("usage") or {}
+            IA_USO["tokens"] += int(uso.get("total_tokens") or 0)
+            IA_USO["llamadas"] += 1
+        except Exception:
+            pass
+        for clave, cab in (("restante_tokens", "x-ratelimit-remaining-tokens"),
+                           ("limite_tokens", "x-ratelimit-limit-tokens"),
+                           ("restante_solicitudes", "x-ratelimit-remaining-requests"),
+                           ("reset_tokens", "x-ratelimit-reset-tokens")):
+            if hdrs.get(cab) is not None:
+                IA_USO[clave] = hdrs.get(cab)
         try:
             return cuerpo["choices"][0]["message"]["content"]
         except Exception:
@@ -1488,10 +1514,15 @@ SOLUCIÓN ESPERADA (referencia del profesor):
 CÓDIGO ENVIADO POR {nombre.upper()}:
 {(codigo or '(el estudiante no envió código)')[:2500]}
 
-Evalúa el código del estudiante comparándolo con el enunciado y la solución esperada.
-Fíjate en si REALMENTE resuelve lo que pide la tarea (errores de lógica, condiciones mal
-puestas, textos equivocados), no solo en la sintaxis. El código pudo perder el formato al
-copiarse, así que NO penalices la indentación ni los espacios.
+Evalúa el código del estudiante. Fíjate en si REALMENTE resuelve lo que pide el
+ENUNCIADO (errores de lógica, condiciones mal puestas, textos equivocados), no solo
+en la sintaxis. El código pudo perder el formato al copiarse, así que NO penalices la
+indentación ni los espacios.
+
+Si NO hay solución de referencia, evalúa igualmente comparando el código con el
+ENUNCIADO: decide si cumple lo pedido y si no tiene errores que impidan ejecutarlo.
+Si cumple y no ves errores, márcalo correcto y felicita. Si falta algo o hay errores,
+señálalo con amabilidad.
 
 Responde SOLO con este JSON:
 {{
@@ -1560,6 +1591,11 @@ def autotest_ia():
     print(f"   errores:  {res.get('errores')}")
     print(f"   fracción: {res.get('fraccion')}")
     print(f"   💬 comentario: {res.get('comentario')}")
+    print(f"\n   tokens usados en esta prueba: {IA_USO['tokens']}")
+    if IA_USO.get("restante_tokens") is not None:
+        lim = IA_USO.get("limite_tokens")
+        print(f"   tokens Groq restantes: {IA_USO['restante_tokens']}"
+              + (f" de {lim}" if lim else ""))
     print("\nTodo listo. Ya puedes usar --comentar ia.")
 
 
@@ -1815,34 +1851,90 @@ def comentar_tarea(pagina, quien, args, registro, grupo, etiqueta, ficha=None):
         pj = {}
         task_id = student_id = None
 
+        # 0) esperar a que la página de la tarea cargue (aparezca su identificador
+        #    en el DOM). Es más fiable que esperar la URL, que en las ventanas
+        #    emergentes a veces no se actualiza a tiempo.
+        fin = time.time() + 15
+        while time.time() < fin:
+            try:
+                listo = pagina.evaluate(
+                    "() => !!(document.querySelector('[old-design-url]') "
+                    "|| document.querySelector('[task-id]'))")
+            except Exception:
+                listo = False
+            if listo:
+                break
+            time.sleep(0.5)
+
+        # 1) intentar con lo que la página ya pidió (captura pasiva), si trae datos
         prog = _json_capturado("progreso")
-        if prog:
+        if prog and prog.get("json"):
             student_id, task_id = prog["student"], prog["task"]
             pj = prog["json"] or {}
-        else:
-            # la URL de learn.kodland.org trae los ids: /task/<tarea>/check/<id>
-            m = REX_URL_CHECK.search(pagina.url)
-            if m:
-                task_id, id2 = int(m.group(1)), int(m.group(2))
-                r, li = api_llamar_multi(paginas, f"/progress/{id2}/")
+
+        # 2) si no hubo captura útil, obtener task_id + student_id de forma ROBUSTA:
+        #    1º del DOM de la página (la página de tarea trae old-design-url con
+        #    student_/lesson_/task_ y un atributo task-id), 2º de la URL como
+        #    respaldo. Con ellos pedimos el progreso por API.
+        if not pj:
+            try:
+                dom = pagina.evaluate(
+                    "() => { var e=document.querySelector('[old-design-url]')"
+                    " || document.querySelector('[task-id]');"
+                    " return e ? {tid:e.getAttribute('task-id'),"
+                    " odu:e.getAttribute('old-design-url')} : {}; }")
+            except Exception:
+                dom = {}
+            odu = (dom or {}).get("odu") or ""
+            u = pagina.url or ""
+            mo = re.search(r"student_(\d+)/lesson_(\d+)/task_(\d+)", odu)
+            m = REX_URL_CHECK.search(u)
+            m2 = REX_URL_CHECK2.search(u)
+            if mo:
+                student_id, task_id = int(mo.group(1)), int(mo.group(3))
+            elif m:
+                task_id, student_id = int(m.group(1)), int(m.group(2))
+            elif m2:
+                student_id, task_id = int(m2.group(1)), int(m2.group(3))
+            elif (dom or {}).get("tid"):
+                try:
+                    task_id = int(dom["tid"])
+                except Exception:
+                    pass
+            if task_id is not None and student_id is not None:
+                r, li = api_llamar_multi(
+                    paginas, f"/students/{student_id}/get_progress_by_task/{task_id}/")
                 consultas += li
                 cuerpo = r.get("cuerpo")
-                if r["status"] == 200 and isinstance(cuerpo, dict) and cuerpo.get("task") == task_id:
+                if r["status"] == 200 and isinstance(cuerpo, dict) and cuerpo:
                     pj = cuerpo
-                    student_id = pj.get("student")
-                else:
-                    r, li = api_llamar_multi(paginas, f"/students/{id2}/get_progress_by_task/{task_id}/")
-                    consultas += li
-                    cuerpo = r.get("cuerpo")
-                    if r["status"] == 200 and isinstance(cuerpo, dict):
-                        pj = cuerpo
-                        student_id = cuerpo.get("student") or id2
+                    student_id = cuerpo.get("student") or student_id
 
         if not pj or task_id is None:
             log("      (comentario omitido: no pude obtener los datos de la tarea)")
+            # guardar captura + HTML de lo que muestra la página, para diagnosticar
+            try:
+                dump_debug(pagina, "tarea_sin_datos")
+            except Exception:
+                pass
+            titulo = ""
+            try:
+                titulo = pagina.title()
+            except Exception:
+                pass
             _volcar_estudio_comentario({
-                "motivo": "sin_datos", "url": pagina.url, "consultas": consultas,
+                "motivo": "sin_datos", "url": pagina.url, "titulo": titulo,
+                "consultas": consultas,
                 "auth_capturada": bool(CAPTURA_API.get("auth")),
+                "n_pestanas": len(getattr(pagina.context, "pages", []) or []),
+                "diag": {
+                    "prog": bool(prog),
+                    "prog_json": (bool(prog.get("json")) if prog else None),
+                    "pj_bool": bool(pj), "pj_tipo": type(pj).__name__,
+                    "task_id": task_id, "student_id": student_id,
+                    "m": bool(REX_URL_CHECK.search(pagina.url or "")),
+                    "m2": bool(REX_URL_CHECK2.search(pagina.url or "")),
+                },
                 "ultimas_llamadas_api": list(CAPTURA_API.get("urls", []))[-30:],
             })
             return
@@ -2050,7 +2142,23 @@ def abrir_y_comentar(ctx, page, ficha, url_leccion_restore, comentador):
 
     if popup is not None:
         try:
-            time.sleep(4)  # dejar que la página de la tarea llame a su API
+            # esperar a que la URL sea de verdad la de la tarea (/task/.../check/...),
+            # no solo cualquier página de kodland: la SPA tarda en enrutar y si
+            # leemos la URL antes, no coincide y no pedimos los datos.
+            fin = time.time() + 25
+            while time.time() < fin:
+                try:
+                    u = popup.url or ""
+                except Exception:
+                    u = ""
+                if REX_URL_CHECK.search(u) or REX_URL_CHECK2.search(u):
+                    break
+                time.sleep(0.5)
+            try:
+                popup.wait_for_load_state("domcontentloaded", timeout=8000)
+            except Exception:
+                pass
+            time.sleep(2)
             comentador(popup)
             return False
         finally:
@@ -2632,6 +2740,17 @@ def main():
     else:
         print(f"  Tareas calificadas:    {total['calificadas']}")
     print(f"  Errores:               {total['errores']}")
+    if IA_USO["llamadas"]:
+        print(f"  IA (Groq):             {IA_USO['tokens']} tokens en {IA_USO['llamadas']} tareas")
+        prom = IA_USO['tokens'] // max(1, IA_USO['llamadas'])
+        print(f"                         (~{prom} tokens por tarea)")
+        if IA_USO.get("restante_tokens") is not None:
+            resto = IA_USO["restante_tokens"]
+            lim = IA_USO.get("limite_tokens")
+            extra = f" de {lim}" if lim else ""
+            reset = IA_USO.get("reset_tokens")
+            extra_reset = f" · se renueva en {reset}" if reset else ""
+            print(f"  Tokens Groq restantes: {resto}{extra}{extra_reset}")
     print(f"  Duración:              {dur // 60} min {dur % 60} s")
     print(f"  Registro CSV:          {registro.ruta}")
     print("──────────────────────────────────────────────")
