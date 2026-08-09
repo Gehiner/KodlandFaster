@@ -1405,6 +1405,8 @@ def _http_post_json(url, headers, payload, timeout=45):
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=data, method="POST")
     req.add_header("Content-Type", "application/json")
+    # Sin User-Agent, Cloudflare (delante de Groq) bloquea con 403 "error 1010".
+    req.add_header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) KodlandCalificador/1.0")
     for k, v in (headers or {}).items():
         req.add_header(k, v)
     try:
