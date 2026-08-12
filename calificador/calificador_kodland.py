@@ -1404,8 +1404,33 @@ def ia_configurada(cfg=None):
 
 
 # Consumo acumulado de la IA en esta ejecución (para el resumen final).
-IA_USO = {"tokens": 0, "llamadas": 0, "restante_tokens": None,
+IA_USO = {"tokens": 0, "llamadas": 0, "reciclados": 0, "restante_tokens": None,
           "limite_tokens": None, "restante_solicitudes": None, "reset_tokens": None}
+
+# Caché de evaluaciones de IA por (tarea, código): si otro alumno entregó el
+# mismo código para la misma tarea, se reutiliza y NO se gasta tokens.
+CACHE_IA = {}
+
+
+def _clave_cache_ia(task_id, codigo):
+    cod = _normalizar_codigo(_limpiar_invisibles(codigo or ""))
+    import hashlib as _hl
+    return (task_id, _hl.sha1(cod.encode("utf-8", "replace")).hexdigest())
+
+
+def imprimir_uso_ia():
+    """Muestra el consumo de tokens de la IA, reciclados y lo que queda."""
+    if not (IA_USO["llamadas"] or IA_USO["reciclados"]):
+        return
+    prom = IA_USO["tokens"] // max(1, IA_USO["llamadas"])
+    print(f"  IA (Groq):             {IA_USO['tokens']} tokens en {IA_USO['llamadas']} tareas (~{prom}/tarea)")
+    if IA_USO["reciclados"]:
+        print(f"  Reciclados:            {IA_USO['reciclados']} tareas (mismo código) → ~{prom * IA_USO['reciclados']} tokens ahorrados")
+    if IA_USO.get("restante_tokens") is not None:
+        lim = IA_USO.get("limite_tokens")
+        reset = IA_USO.get("reset_tokens")
+        extra = (f" de {lim}" if lim else "") + (f" · se renueva en {reset}" if reset else "")
+        print(f"  Tokens Groq restantes: {IA_USO['restante_tokens']}{extra}")
 
 
 def _http_post_json(url, headers, payload, timeout=45):
@@ -1501,7 +1526,7 @@ def nota_desde_fraccion(fraccion, maximo, minimo):
     return int(round(minimo + fraccion * (maximo - minimo)))
 
 
-def construir_prompt_ia(enunciado, solucion, codigo, nombre):
+def construir_prompt_ia(enunciado, solucion, codigo):
     system = ("Eres un profesor de programación de Kodland: cálido, motivador y cercano. "
               "Revisas tareas de Python de adolescentes (13-17 años) y respondes en español "
               "latinoamericano neutro. Devuelves SIEMPRE un único objeto JSON válido, sin texto extra.")
@@ -1511,7 +1536,7 @@ def construir_prompt_ia(enunciado, solucion, codigo, nombre):
 SOLUCIÓN ESPERADA (referencia del profesor):
 {(solucion or '(no hay solución de referencia)')[:2500]}
 
-CÓDIGO ENVIADO POR {nombre.upper()}:
+CÓDIGO ENVIADO POR EL ESTUDIANTE:
 {(codigo or '(el estudiante no envió código)')[:2500]}
 
 Evalúa el código del estudiante. Fíjate en si REALMENTE resuelve lo que pide el
@@ -1528,7 +1553,7 @@ Responde SOLO con este JSON:
 {{
   "correcto": true,
   "errores": [],
-  "comentario": "comentario cálido y personalizado para {nombre}, de 2 a 4 frases, en español, que mencione algo específico de SU código; si hay errores, explícalos con amabilidad y una pista para corregir (sin dar la solución completa); incluye 1 o 2 emojis",
+  "comentario": "comentario cálido de 2 a 4 frases en español; dirígete al estudiante escribiendo LITERALMENTE {{nombre}} donde iría su nombre (no inventes un nombre); menciona algo específico de SU código; si hay errores explícalos con amabilidad y una pista para corregir (sin dar la solución completa); incluye 1 o 2 emojis",
   "fraccion": 1.0
 }}
 - "correcto": true si cumple lo que pide la tarea, false si no.
@@ -1537,10 +1562,12 @@ Responde SOLO con este JSON:
     return system, user
 
 
-def comentario_llm(enunciado, solucion, codigo, quien):
-    """Comentario personalizado + evaluación con un LLM externo.
+def comentario_llm(enunciado, solucion, codigo):
+    """Comentario (con marcador {nombre}) + evaluación con un LLM externo.
 
     Devuelve {comentario, fraccion, correcto, errores} o None si no disponible.
+    El comentario trae {nombre} para que el llamador ponga el nombre del alumno
+    (así se puede REUTILIZAR para otros alumnos con el mismo código).
     """
     cfg = cargar_ia_config()
     if not ia_configurada(cfg):
@@ -1548,8 +1575,7 @@ def comentario_llm(enunciado, solucion, codigo, quien):
             comentario_llm._avisado = True
             log("      (IA sin configurar: pega tu clave en ia_config.json → por ahora uso plantillas)")
         return None
-    nombre = quien.split()[0] if quien and not quien.startswith("(") else "el estudiante"
-    system, user = construir_prompt_ia(enunciado, solucion, codigo, nombre)
+    system, user = construir_prompt_ia(enunciado, solucion, codigo)
     texto = _llm_chat(cfg, system, user)
     datos = _extraer_json(texto)
     if not datos or not datos.get("comentario"):
@@ -1581,8 +1607,9 @@ def autotest_ia():
     res = comentario_llm(
         "Pide la edad al usuario e imprime si es mayor o menor de 18 años.",
         "edad = int(input('Edad: '))\nif edad >= 18:\n    print('Mayor')\nelse:\n    print('Menor')",
-        "edad = int(input('Edad: '))\nif edad > 18:\n    print('Mayor')\nelse:\n    print('Menor')",
-        "Sofía Ejemplo")
+        "edad = int(input('Edad: '))\nif edad > 18:\n    print('Mayor')\nelse:\n    print('Menor')")
+    if res and res.get("comentario"):
+        res["comentario"] = res["comentario"].replace("{nombre}", "Sofía")
     if not res:
         print("\n❌ La IA no respondió. Revisa la clave, el modelo y tu conexión.")
         return
@@ -1979,12 +2006,30 @@ def comentar_tarea(pagina, quien, args, registro, grupo, etiqueta, ficha=None):
         fraccion_ia = None
         ia_eval = None
         if args.comentar == "ia":
-            res = comentario_llm(enunciado, solucion, codigo_alumno, quien)
+            # RECICLAJE: si ya evaluamos este mismo código para esta misma tarea
+            # (otro alumno lo entregó igual), reutilizamos y NO gastamos tokens.
+            clave = _clave_cache_ia(task_id, codigo_alumno)
+            res = CACHE_IA.get(clave)
+            reciclado = res is not None
+            if res is None:
+                res = comentario_llm(enunciado, solucion, codigo_alumno)
+                if res and res.get("comentario"):
+                    CACHE_IA[clave] = res
             if res and res.get("comentario"):
-                comentario = res["comentario"]
+                # el comentario trae {nombre}; ponemos el del alumno actual
+                nombre = quien.split()[0] if quien and not quien.startswith("(") else ""
+                com = res["comentario"]
+                if nombre:
+                    com = com.replace("{nombre}", nombre)
+                else:
+                    com = com.replace("{nombre}", "")
+                    com = re.sub(r"^\s*[,;:¡!.\-]+\s*", "", com)  # puntuación inicial sobrante
+                comentario = re.sub(r"\s{2,}", " ", com).strip()
                 fraccion_ia = res.get("fraccion")
                 ia_eval = {"correcto": res.get("correcto"), "errores": res.get("errores")}
-                origen = "ia"
+                origen = "ia (reciclado)" if reciclado else "ia"
+                if reciclado:
+                    IA_USO["reciclados"] += 1
         if not comentario:
             comentario = comentario_local(quien, codigo_alumno, solucion, det_codigo)
 
@@ -2474,12 +2519,18 @@ def probar_comentario(ctx, page, elegidos, args, registro):
                 except Exception as e:
                     log(f"   ⚠ No pude abrir esa tarea ({e}); pruebo con otra…")
             if hechas >= objetivo_n:
+                if IA_USO["llamadas"] or IA_USO["reciclados"]:
+                    print("\n── Consumo de IA ──")
+                    imprimir_uso_ia()
                 log("Prueba terminada. Revisa arriba los comentarios y la radiografía en 'depuracion'.")
                 return
     if hechas:
         log(f"Prueba terminada: solo encontré {hechas} tarea(s) con entrega.")
     else:
         log("No encontré ninguna tarea con entrega para probar. Prueba con --todas-las-lecciones.")
+    if IA_USO["llamadas"] or IA_USO["reciclados"]:
+        print("\n── Consumo de IA ──")
+        imprimir_uso_ia()
 
 
 # -------------------------------- diagnóstico --------------------------------
@@ -2740,17 +2791,7 @@ def main():
     else:
         print(f"  Tareas calificadas:    {total['calificadas']}")
     print(f"  Errores:               {total['errores']}")
-    if IA_USO["llamadas"]:
-        print(f"  IA (Groq):             {IA_USO['tokens']} tokens en {IA_USO['llamadas']} tareas")
-        prom = IA_USO['tokens'] // max(1, IA_USO['llamadas'])
-        print(f"                         (~{prom} tokens por tarea)")
-        if IA_USO.get("restante_tokens") is not None:
-            resto = IA_USO["restante_tokens"]
-            lim = IA_USO.get("limite_tokens")
-            extra = f" de {lim}" if lim else ""
-            reset = IA_USO.get("reset_tokens")
-            extra_reset = f" · se renueva en {reset}" if reset else ""
-            print(f"  Tokens Groq restantes: {resto}{extra}{extra_reset}")
+    imprimir_uso_ia()
     print(f"  Duración:              {dur // 60} min {dur % 60} s")
     print(f"  Registro CSV:          {registro.ruta}")
     print("──────────────────────────────────────────────")
