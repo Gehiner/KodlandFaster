@@ -40,6 +40,16 @@
       "matches": ["https://bo.kodland.org/teachers/*"],
       "js": ["teacher-page-buttons.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://bo.kodland.org/groups/*"],
+      "js": ["retention-radar/main.js"],
+      "run_at": "document_idle"
+    },
+        {
+      "matches": ["https://bo.kodland.org/groups/*"],
+      "js": ["retention-radar/groupSchedule.js"],
+      "run_at": "document_idle"
     }
   ]
 }
