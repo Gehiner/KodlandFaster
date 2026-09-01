@@ -47,6 +47,7 @@ UI = {
         "th_modulo": "Módulo", "th_tareas": "Tarefas", "th_puntos": "Pontos", "th_avance": "Progresso",
         "asis_titulo": "PRESENÇA NAS AULAS", "est_pres": "Presente", "est_aus": "Ausente",
         "est_just": "Justif.", "msg": "MENSAGEM PARA VOCÊ",
+        "firma": "ASSINATURA DO PROFESSOR(A)", "sello": "SELO KODLAND",
     },
     "es": {
         "titulo": "REPORTE DE DESARROLLO",
@@ -69,6 +70,7 @@ UI = {
         "th_modulo": "Módulo", "th_tareas": "Tareas", "th_puntos": "Puntos", "th_avance": "Avance",
         "asis_titulo": "ASISTENCIA A CLASES", "est_pres": "Presente", "est_aus": "Ausente",
         "est_just": "Justif.", "msg": "MENSAJE PARA TI",
+        "firma": "FIRMA DEL TUTOR(A)", "sello": "SELLO KODLAND",
     },
 }
 
@@ -253,6 +255,15 @@ table.calif tr.total td{font-weight:800; background:#fbfdf5; border-top:2px soli
 .ses.pres{background:#eef7d8;} .ses.pres .e{color:#5e7a1a;}
 .ses.aus{background:#fbe0e0;} .ses.aus .e{color:#a23434;}
 .ses.just{background:#fbecc9;} .ses.just .e{color:#8a5e10;}
+.firmas{display:flex; justify-content:space-around; align-items:flex-end; gap:30px; margin:22px 0 18px; padding:0 10px;}
+.col-firma{flex:1; max-width:300px; text-align:center;}
+.col-firma .linea{border-top:1.5px solid var(--oscuro); margin-top:30px;}
+.col-firma .fnombre{font-weight:800; font-size:13px; color:var(--oscuro); margin-top:6px;}
+.frol{font-size:8.5px; letter-spacing:.1em; color:#8a9078; font-weight:700; text-transform:uppercase; margin-top:3px;}
+.col-sello{text-align:center;}
+.sello-caja{width:108px; height:108px; margin:0 auto; border:2px dashed #c4c8b4; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; color:#bcc0ac; font-size:9px;
+  letter-spacing:.08em; font-weight:700; text-transform:uppercase; text-align:center; line-height:1.3;}
 """
 
 
@@ -435,8 +446,18 @@ def build_html(curso, alumno):
     <p>{esc(sustituir(paso.get('texto',''), nombre))}</p>
   </div>
 
+  <div class="firmas">
+    <div class="col-firma">
+      <div class="linea"></div>
+      <div class="fnombre">{esc(alumno.get('profesor','')) or '&nbsp;'}</div>
+      <div class="frol">{ui['firma']}</div>
+    </div>
+    <div class="col-sello">
+      <div class="sello-caja">{ui['sello']}</div>
+    </div>
+  </div>
+
   <div class="pie">
-    <div style="font-size:9px;letter-spacing:.08em;color:#8a9078;font-weight:700;margin-bottom:10px">{esc(alumno.get('profesor',''))} · {ui['pie_profesor']}</div>
     <div class="barra"><span class="l">kodland</span><span class="c">{ui['pie_lema']}</span><span style="color:#fff;font-weight:700;font-size:11px">kodland.com.br</span></div>
   </div>
   <div class="pie-num">Kodland · {ui['pagina']}</div>
