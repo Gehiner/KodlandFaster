@@ -2680,13 +2680,18 @@ def generar_reportes_grupo(ctx, page, grupo, pw):
     # buscar el JSON de contenido del curso: todas las palabras del slug deben
     # aparecer en el título del curso; si varios encajan, gana el más específico
     # (más palabras). Así "roblox_2" gana a "roblox" para un grupo de Roblox 2.
-    palabras_txt = set(w for w in re.split(r"[^a-z0-9]+", titulo.lower()) if w)
+    # Se separan letra-dígito ("lvl2" -> "lvl 2") para reconocer los niveles.
+    def _pal(s):
+        s = re.sub(r"([a-z])(\d)", r"\1 \2", s.lower())
+        s = re.sub(r"(\d)([a-z])", r"\1 \2", s)
+        return [w for w in re.split(r"[^a-z0-9]+", s) if w]
+    palabras_txt = set(_pal(titulo))
     candidatos = []
     for rc in _glob.glob(str(DIR_BASE / "reportes" / "curso_*.json")):
-        slug = Path(rc).stem.replace("curso_", "").lower()
-        if not slug or slug == "example":
+        slug = Path(rc).stem.replace("curso_", "")
+        if not slug or slug.lower() == "example":
             continue
-        palabras_slug = [w for w in re.split(r"[^a-z0-9]+", slug) if w]
+        palabras_slug = _pal(slug)
         if palabras_slug and all(w in palabras_txt for w in palabras_slug):
             candidatos.append((len(palabras_slug), rc))
     ruta_curso = max(candidatos)[1] if candidatos else None

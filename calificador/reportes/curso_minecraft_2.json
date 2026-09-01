@@ -1,0 +1,89 @@
+{
+  "_ayuda": "Contenido del curso Minecraft Education LVL2 (del syllabus oficial). {alumno} se reemplaza por el nombre. Revisa 'proximo_nivel' y 'proximo_paso'.",
+  "curso": "Minecraft Education (Nivel 2)",
+  "idioma": "es",
+  "area_interes": "Programación en Python y Creación de Mundos",
+  "proximo_nivel": "Python 1",
+  "vision_general": "A lo largo de Minecraft Education 2, {alumno} aprendió a programar en Python dentro de Minecraft, controlando al Agente para construir mundos y crear sus propios juegos. El gráfico muestra el aprovechamiento registrado en cada módulo, evidenciando las áreas de mayor dominio y las de oportunidad de refuerzo.",
+  "modulos": [
+    {
+      "numero": 1,
+      "titulo": "Conociendo al Agente: Comandos en Python",
+      "descripcion": "{alumno} dio sus primeros pasos en Python controlando al Agente de Minecraft.",
+      "aprendizajes": [
+        "Qué es un programa y sus comandos",
+        "Mover y girar al Agente por una ruta",
+        "Colocar bloques y construir un puente",
+        "Excavar, romper bloques y recolectar recursos",
+        "El bucle for para repetir acciones"
+      ],
+      "proyecto": "Base de una minicasa"
+    },
+    {
+      "numero": 2,
+      "titulo": "El Mundo de la Repetición",
+      "descripcion": "{alumno} dominó bucles, variables y funciones para construir estructuras.",
+      "aprendizajes": [
+        "Optimización con bucles y bucles anidados",
+        "Variables para objetos de distintas alturas",
+        "Valores aleatorios",
+        "Iteraciones en 3D (escaleras)",
+        "Funciones propias con y sin parámetros"
+      ],
+      "proyecto": "Formas construidas con funciones"
+    },
+    {
+      "numero": 3,
+      "titulo": "El Agente Inteligente",
+      "descripcion": "{alumno} hizo que el Agente tomara decisiones con condiciones, lógica y listas.",
+      "aprendizajes": [
+        "Condiciones if/elif",
+        "Análisis del entorno para decidir",
+        "Condiciones combinadas con variables",
+        "Listas de materiales",
+        "Selección de la herramienta adecuada"
+      ],
+      "proyecto": "Agente que busca recursos de forma inteligente"
+    },
+    {
+      "numero": 4,
+      "titulo": "El Mundo de las Coordenadas",
+      "descripcion": "{alumno} modeló el mundo usando coordenadas, eventos y aleatoriedad.",
+      "aprendizajes": [
+        "Ejes x, y, z y colocación de bloques",
+        "Bucles con coordenadas precisas",
+        "Generación aleatoria (pos y randint)",
+        "Comprobación de bloques y teletransportación",
+        "Eventos de movimiento y paisaje aleatorio"
+      ],
+      "proyecto": "Casa con bucles, eventos y coordenadas"
+    },
+    {
+      "numero": 5,
+      "titulo": "El Mundo de los Creadores e IA",
+      "descripcion": "En la etapa final, {alumno} exploró la IA y creó su propio minijuego en Python.",
+      "aprendizajes": [
+        "Qué es la inteligencia artificial y su ética",
+        "Uso eficaz de la IA para el proyecto",
+        "Creación de un minijuego",
+        "Temporizador y sistema de puntuación",
+        "Reinicio del juego y presentación"
+      ],
+      "proyecto": "Minijuego en Python (presentado)"
+    }
+  ],
+  "consideraciones": "Durante Minecraft Education 2, {alumno} construyó una base sólida de programación en Python creando mundos y juegos, y se acercó a la inteligencia artificial. Las competencias trabajadas fueron:",
+  "competencias": [
+    "Programación en Python (comandos y sintaxis)",
+    "Bucles y bucles anidados",
+    "Variables y funciones",
+    "Condicionales, lógica y listas",
+    "Coordenadas y eventos",
+    "Fundamentos y ética de la IA",
+    "Resolución de problemas"
+  ],
+  "proximo_paso": {
+    "titulo": "Python 1",
+    "texto": "Considerando que {alumno} ya programa en Python dentro de Minecraft, el próximo paso recomendado es Python 1, donde llevará estos fundamentos a crear aplicaciones y videojuegos fuera del juego."
+  }
+}

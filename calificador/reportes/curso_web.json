@@ -1,0 +1,145 @@
+{
+  "_ayuda": "Contenido del curso Web (del syllabus oficial). {alumno} se reemplaza por el nombre. Revisa 'proximo_nivel' y 'proximo_paso'.",
+  "curso": "Desarrollo Web",
+  "idioma": "es",
+  "area_interes": "Desarrollo Web",
+  "proximo_nivel": "Python Pro",
+  "vision_general": "A lo largo del curso Web, {alumno} aprendió a crear y publicar sitios web modernos, desde los fundamentos de HTML y CSS hasta el diseño responsivo, Bootstrap y JavaScript. El gráfico muestra el aprovechamiento registrado en cada módulo, evidenciando las áreas de mayor dominio y las de oportunidad de refuerzo.",
+  "modulos": [
+    {
+      "numero": 1,
+      "titulo": "Introducción a HTML",
+      "descripcion": "{alumno} creó sus primeras páginas web con etiquetas y multimedia.",
+      "aprendizajes": [
+        "Etiquetas básicas (<p>, <h1>, <img>)",
+        "Multimedia: <img>, <video>, <audio>",
+        "Marcos (<iframe>) y diseños de página",
+        "Introducción a CSS"
+      ],
+      "proyecto": "Primeras páginas web con multimedia"
+    },
+    {
+      "numero": 2,
+      "titulo": "Fundamentos de CSS",
+      "descripcion": "{alumno} aprendió a dar estilo a sus páginas con CSS.",
+      "aprendizajes": [
+        "Selectores de CSS",
+        "Modelo de bloques y elementos en línea",
+        "Enlaces y propiedades de fondo",
+        "Posicionamiento de elementos"
+      ],
+      "proyecto": "Páginas con estilos modernos"
+    },
+    {
+      "numero": 3,
+      "titulo": "Prototipos y UX/UI",
+      "descripcion": "{alumno} conoció el diseño de interfaces y prototipó su proyecto.",
+      "aprendizajes": [
+        "Conceptos de UX y UI",
+        "Cómo funcionan los buscadores (SEO)",
+        "Diseño de maquetas en Figma",
+        "Flexbox"
+      ],
+      "proyecto": "Diseño del proyecto en Figma"
+    },
+    {
+      "numero": 4,
+      "titulo": "Implementación y Publicación",
+      "descripcion": "{alumno} llevó su diseño a código y publicó su primer sitio.",
+      "aprendizajes": [
+        "Trabajo con Visual Studio Code",
+        "Compatibilidad entre navegadores",
+        "Publicación con GitHub",
+        "Conexión de analítica y comentarios"
+      ],
+      "proyecto": "Primer sitio web publicado"
+    },
+    {
+      "numero": 5,
+      "titulo": "CSS Avanzado",
+      "descripcion": "{alumno} amplió su dominio de CSS con efectos y animaciones.",
+      "aprendizajes": [
+        "Pseudo-clases y pseudo-elementos",
+        "Transformaciones",
+        "Animaciones en CSS",
+        "Modelo de bloques avanzado"
+      ],
+      "proyecto": "Sitio con efectos y animaciones"
+    },
+    {
+      "numero": 6,
+      "titulo": "Diseño Adaptable, Cuadrículas y Formularios",
+      "descripcion": "{alumno} hizo sus sitios responsivos y capaces de recoger datos.",
+      "aprendizajes": [
+        "Diseños de cuadrícula (grid)",
+        "Variables en CSS",
+        "Diseño web adaptativo y responsivo",
+        "Formularios"
+      ],
+      "proyecto": "Sitio adaptable a cualquier pantalla"
+    },
+    {
+      "numero": 7,
+      "titulo": "Proyecto Final: Desarrollo",
+      "descripcion": "{alumno} aplicó todo lo aprendido en su proyecto principal.",
+      "aprendizajes": [
+        "Refinamiento de la idea y los recursos",
+        "HTML del encabezado, página principal y pie",
+        "CSS de la página principal",
+        "Implementación de la adaptabilidad"
+      ],
+      "proyecto": "Sitio web del proyecto final"
+    },
+    {
+      "numero": 8,
+      "titulo": "El Framework Bootstrap",
+      "descripcion": "{alumno} aceleró su desarrollo con componentes de Bootstrap.",
+      "aprendizajes": [
+        "Estructura básica con Bootstrap",
+        "Cuadrícula adaptativa de Bootstrap",
+        "Componentes listos (botones, tarjetas, navbars)",
+        "Sitio completo con Bootstrap"
+      ],
+      "proyecto": "Sitio responsivo con Bootstrap"
+    },
+    {
+      "numero": 9,
+      "titulo": "Eficiencia con Inteligencia Artificial",
+      "descripcion": "{alumno} usó IA para escribir y mejorar su código web.",
+      "aprendizajes": [
+        "Conceptos esenciales de la IA",
+        "Generar y corregir código con IA",
+        "Mejorar el diseño con IA",
+        "Creación de mini-sitios con IA"
+      ],
+      "proyecto": "Mini-sitio creado con ayuda de IA"
+    },
+    {
+      "numero": 10,
+      "titulo": "Proyecto de Graduación y JavaScript",
+      "descripcion": "En la etapa final, {alumno} añadió interactividad con JavaScript y presentó su proyecto.",
+      "aprendizajes": [
+        "Introducción a JavaScript y la consola",
+        "Validación de formularios",
+        "Menú hamburguesa y carruseles con JS",
+        "Presentación del proyecto"
+      ],
+      "proyecto": "Sitio web interactivo (portafolio)"
+    }
+  ],
+  "consideraciones": "Durante el curso Web, {alumno} construyó un perfil de desarrollador front-end, capaz de crear, estilizar, adaptar y publicar sitios web completos. Las competencias trabajadas fueron:",
+  "competencias": [
+    "HTML y estructura de páginas",
+    "CSS (estilos, animaciones y grid)",
+    "Diseño UX/UI y prototipado (Figma)",
+    "Diseño responsivo",
+    "Framework Bootstrap",
+    "JavaScript e interactividad",
+    "Publicación web (GitHub)",
+    "Uso de IA en el desarrollo"
+  ],
+  "proximo_paso": {
+    "titulo": "Python Pro",
+    "texto": "Considerando el dominio de {alumno} en el desarrollo web, el próximo paso recomendado es Python Pro, donde sumará el desarrollo back-end, bases de datos e inteligencia artificial para convertirse en un desarrollador más completo."
+  }
+}

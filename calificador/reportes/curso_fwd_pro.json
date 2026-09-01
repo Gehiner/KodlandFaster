@@ -1,0 +1,145 @@
+{
+  "_ayuda": "Contenido del curso FWD Pro = Diseño de Mundos Fantásticos Pro. {alumno} se reemplaza por el nombre. Si el reporte no lo asocia a tu grupo, dime el titulo exacto del curso y ajusto el nombre del archivo.",
+  "curso": "Diseño de Mundos Fantásticos Pro",
+  "idioma": "es",
+  "area_interes": "Diseño 3D y Multimedia",
+  "proximo_nivel": "Portafolio profesional 3D",
+  "vision_general": "A lo largo de Diseño de Mundos Fantásticos Pro, {alumno} creó mundos en 3D, personajes, animaciones y sitios web, recorriendo un viaje creativo de la idea a la realización. El gráfico muestra el aprovechamiento registrado en cada módulo, evidenciando las áreas de mayor dominio y las de oportunidad de refuerzo.",
+  "modulos": [
+    {
+      "numero": 1,
+      "titulo": "Póster de tu Juego o Película en Photopea",
+      "descripcion": "{alumno} diseñó un póster profesional editando imágenes en Photopea.",
+      "aprendizajes": [
+        "Herramientas de edición de Photopea",
+        "Cortar y transformar imágenes",
+        "Composición y texto del cartel",
+        "Presentación en mockup"
+      ],
+      "proyecto": "Póster elegante para un producto propio"
+    },
+    {
+      "numero": 2,
+      "titulo": "Herramientas Básicas de Modelado 3D",
+      "descripcion": "{alumno} dio sus primeros pasos en el modelado 3D.",
+      "aprendizajes": [
+        "Introducción al modelado 3D",
+        "Formas básicas",
+        "Modo de edición",
+        "Completar el primer modelo"
+      ],
+      "proyecto": "Modelo 3D de un edificio"
+    },
+    {
+      "numero": 3,
+      "titulo": "Modelado Avanzado",
+      "descripcion": "{alumno} detalló interiores y trabajó con texturas y sombreado.",
+      "aprendizajes": [
+        "Concepto y base del interior",
+        "Detallado avanzado",
+        "Nodos de sombreado",
+        "Superposición de texturas"
+      ],
+      "proyecto": "Habitación detallada con texturas"
+    },
+    {
+      "numero": 4,
+      "titulo": "Desarrollando tu Personaje",
+      "descripcion": "{alumno} modeló y animó su propio personaje 3D.",
+      "aprendizajes": [
+        "Creación de personajes",
+        "Detalles del personaje",
+        "Modelado de la ropa",
+        "Exportar y animar"
+      ],
+      "proyecto": "Personaje 3D animado"
+    },
+    {
+      "numero": 5,
+      "titulo": "Creación de Ubicación",
+      "descripcion": "{alumno} construyó un entorno 3D completo para un juego o caricatura.",
+      "aprendizajes": [
+        "Modelado de paisaje",
+        "Entorno temático",
+        "Modelado de vegetación",
+        "Materiales y color de la escena"
+      ],
+      "proyecto": "Ubicación 3D con árboles, agua y edificios"
+    },
+    {
+      "numero": 6,
+      "titulo": "Animación, Color y Renderizado",
+      "descripcion": "{alumno} animó su mundo 3D y aprendió a renderizarlo.",
+      "aprendizajes": [
+        "Principios de la animación 3D",
+        "Animar una ubicación",
+        "Configuración de cámara y luces",
+        "Renderizado final"
+      ],
+      "proyecto": "Animación de un mundo 3D (video)"
+    },
+    {
+      "numero": 7,
+      "titulo": "Física y Simulación de Partículas",
+      "descripcion": "{alumno} creó efectos realistas con física y partículas.",
+      "aprendizajes": [
+        "Simulación de física",
+        "Simulación de fluidos",
+        "Fuego y humo",
+        "Sistema de partículas"
+      ],
+      "proyecto": "Cuatro videos con efectos 3D realistas"
+    },
+    {
+      "numero": 8,
+      "titulo": "Diseño Arquitectónico",
+      "descripcion": "{alumno} modeló arquitectura fotorrealista.",
+      "aprendizajes": [
+        "Modelado arquitectónico",
+        "Desenvoltura UV y texturizado",
+        "Puertas, ventanas, plantas y muebles",
+        "Iluminación y render final"
+      ],
+      "proyecto": "Casa suburbana fotorrealista"
+    },
+    {
+      "numero": 9,
+      "titulo": "Proyecto de Diseño de Sitio Web",
+      "descripcion": "{alumno} diseñó su propio sitio web con animaciones.",
+      "aprendizajes": [
+        "Conociendo Tilda",
+        "Logotipo, eslogan y diseño gráfico",
+        "Proyecto de diseño del sitio",
+        "Diseño y animación en ZeroBlock"
+      ],
+      "proyecto": "Sitio web con diseño y animación propios"
+    },
+    {
+      "numero": 10,
+      "titulo": "Proyecto Final",
+      "descripcion": "En la etapa final, {alumno} desarrolló y presentó su proyecto soñado.",
+      "aprendizajes": [
+        "Hackathon: presentación de ideas y planificación",
+        "Desarrollo por sprints",
+        "Integración de póster, 3D y web",
+        "Demostración final"
+      ],
+      "proyecto": "Proyecto propio (póster, modelo 3D y sitio web)"
+    }
+  ],
+  "consideraciones": "Durante Diseño de Mundos Fantásticos Pro, {alumno} integró ilustración, modelado 3D, animación y diseño web en proyectos completos. Las competencias trabajadas fueron:",
+  "competencias": [
+    "Edición de imágenes (Photopea)",
+    "Modelado 3D (objetos, personajes y entornos)",
+    "Texturizado y sombreado",
+    "Animación y renderizado 3D",
+    "Física y simulación de partículas",
+    "Diseño arquitectónico fotorrealista",
+    "Diseño web (Tilda)",
+    "Gestión de proyectos (hackathon y sprints)"
+  ],
+  "proximo_paso": {
+    "titulo": "Portafolio profesional 3D",
+    "texto": "Considerando el dominio de {alumno} en 3D, animación y diseño web, el próximo paso recomendado es consolidar un portafolio profesional y especializarse en un área (modelado 3D, animación o diseño web) para proyectos del mundo real."
+  }
+}

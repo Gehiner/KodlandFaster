@@ -1,0 +1,153 @@
+{
+  "_ayuda": "Contenido del curso Roblox lvl 2 (del syllabus oficial). {alumno} se reemplaza por el nombre. Revisa 'proximo_nivel' y 'proximo_paso'.",
+  "curso": "Desarrollador de Juegos Roblox (Nivel 2)",
+  "idioma": "es",
+  "area_interes": "Creación de Videojuegos",
+  "proximo_nivel": "Python 1",
+  "vision_general": "A lo largo de Roblox 2, {alumno} profundizó en la programación en LUA y creó juegos completos de distintos géneros, desde Tower Defense hasta simuladores. El gráfico muestra el aprovechamiento registrado en cada módulo, evidenciando las áreas de mayor dominio y las de oportunidad de refuerzo.",
+  "modulos": [
+    {
+      "numero": 1,
+      "titulo": "Fundamentos de Programación en LUA",
+      "descripcion": "{alumno} repasó y afianzó las bases de la programación en LUA dentro de Roblox.",
+      "aprendizajes": [
+        "Repaso de variables y funciones en LUA",
+        "Corrección de errores en el código",
+        "Bucles y su uso práctico",
+        "Configuración de teletransporte",
+        "Búsqueda de objetos por código"
+      ],
+      "proyecto": "Proyecto de repaso (variables, funciones y bucles)"
+    },
+    {
+      "numero": 2,
+      "titulo": "Rompecabezas de Trabajo en Equipo",
+      "descripcion": "{alumno} aprendió a desarrollar juegos en equipo creando un juego de rompecabezas cooperativo.",
+      "aprendizajes": [
+        "Desarrollo colaborativo de un proyecto",
+        "Creación de obstáculos",
+        "El bucle for y la optimización del código",
+        "El bucle while en la práctica",
+        "Publicación en Roblox"
+      ],
+      "proyecto": "Teamwork Puzzle (publicado)"
+    },
+    {
+      "numero": 3,
+      "titulo": "Tower Defense: Eventos de Roblox",
+      "descripcion": "{alumno} creó un juego Tower Defense trabajando con NPCs, eventos y matemáticas.",
+      "aprendizajes": [
+        "Creación de NPCs (PNJ)",
+        "Objetos por código y servicio de almacenamiento",
+        "Funciones que devuelven datos",
+        "Cálculo de distancias entre objetos",
+        "Eventos especiales (BindableEvents)"
+      ],
+      "proyecto": "Tower Defense (publicado)"
+    },
+    {
+      "numero": 4,
+      "titulo": "Color Block: Inicio del Proyecto",
+      "descripcion": "{alumno} inició un juego con lógica avanzada, matrices de datos y guardado.",
+      "aprendizajes": [
+        "Bucles complejos sobre matrices de datos",
+        "Atributos y posición/movimiento de objetos por Lua",
+        "Module Scripts y sincronización entre scripts",
+        "Lógica de rondas",
+        "Guardado con la API DataStore y tabla de clasificación"
+      ],
+      "proyecto": "Color Block (parte 1)"
+    },
+    {
+      "numero": 5,
+      "titulo": "Color Block: Ampliación",
+      "descripcion": "{alumno} amplió el juego con multijugador sincronizado, mapas e interfaz.",
+      "aprendizajes": [
+        "Servicio RunService y lógica de votación",
+        "Configuración del usuario y carga de mapas",
+        "RemoteEvents: interacción y sincronización entre jugadores",
+        "Interfaz de usuario del juego",
+        "Monetización con Robux"
+      ],
+      "proyecto": "Color Block (versión extendida, publicado)"
+    },
+    {
+      "numero": 6,
+      "titulo": "Simulador: Scripting Avanzado",
+      "descripcion": "{alumno} sentó las bases de un juego simulador con scripting avanzado.",
+      "aprendizajes": [
+        "El género simulador y su planificación",
+        "Matrices de datos complejas y optimización",
+        "GUI avanzada modificada por código",
+        "Barreras entre niveles y economía de monedas",
+        "Sistema de guardado de datos complejos"
+      ],
+      "proyecto": "Pet Simulator (base)"
+    },
+    {
+      "numero": 7,
+      "titulo": "Pet Simulator: Nuevas Funciones",
+      "descripcion": "{alumno} completó su simulador con mascotas, inventario y monetización.",
+      "aprendizajes": [
+        "Creación de mascotas y servicio HeartBeat",
+        "Inventario de mascotas y tienda aleatoria",
+        "Activar/eliminar mascotas y optimización",
+        "Habilidades de mascotas",
+        "Monetización con moneda del juego (Robux)"
+      ],
+      "proyecto": "Pet Simulator (final, publicado)"
+    },
+    {
+      "numero": 8,
+      "titulo": "Captura la Bandera: Construcción",
+      "descripcion": "{alumno} exploró un nuevo género creando un juego de equipos.",
+      "aprendizajes": [
+        "Construcción de la ubicación del juego",
+        "El servicio Teams (equipos)",
+        "Sistema de captura de banderas",
+        "Interfaz gráfica y pantalla de ganadores"
+      ],
+      "proyecto": "Captura la Bandera (parte 1)"
+    },
+    {
+      "numero": 9,
+      "titulo": "Captura la Bandera: Desarrollo",
+      "descripcion": "{alumno} amplió su juego de equipos con nuevas mecánicas.",
+      "aprendizajes": [
+        "Trampas y teletransportadores",
+        "Congelar oponentes",
+        "Habilidades únicas",
+        "Tabla de clasificación funcional"
+      ],
+      "proyecto": "Captura la Bandera (final)"
+    },
+    {
+      "numero": 10,
+      "titulo": "Proyecto Propio e Inteligencia Artificial",
+      "descripcion": "En la etapa final, {alumno} desarrolló su propio juego usando IA y lo presentó.",
+      "aprendizajes": [
+        "Desarrollo de una idea propia",
+        "Asistente de IA para el desarrollo",
+        "Técnicas de teletransportación de Roblox",
+        "Modificación de las propiedades de los jugadores",
+        "Presentación del proyecto"
+      ],
+      "proyecto": "Proyecto de graduación propio"
+    }
+  ],
+  "consideraciones": "Durante Roblox 2, {alumno} consolidó una programación en LUA sólida y creó juegos completos de varios géneros, con guardado, multijugador y monetización. Las competencias trabajadas fueron:",
+  "competencias": [
+    "Programación avanzada en LUA",
+    "Funciones, bucles y optimización de código",
+    "Guardado de datos (DataStore)",
+    "Multijugador y sincronización (RemoteEvents)",
+    "Interfaz de usuario (GUI)",
+    "Sistemas de economía y monetización",
+    "Uso de inteligencia artificial",
+    "Desarrollo de proyectos completos"
+  ],
+  "proximo_paso": {
+    "titulo": "Python 1",
+    "texto": "Considerando el dominio de {alumno} en la programación de juegos con LUA, el próximo paso recomendado es Python 1, donde llevará su lógica de programación a un lenguaje de texto de propósito general para crear aplicaciones y juegos propios."
+  }
+}

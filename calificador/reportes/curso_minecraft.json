@@ -1,0 +1,89 @@
+{
+  "_ayuda": "Contenido del curso Minecraft Education LVL1 (del syllabus oficial). {alumno} se reemplaza por el nombre. Revisa 'proximo_nivel' y 'proximo_paso'.",
+  "curso": "Minecraft Education (Nivel 1)",
+  "idioma": "es",
+  "area_interes": "Programación y Construcción de Mundos",
+  "proximo_nivel": "Minecraft 2",
+  "vision_general": "A lo largo de Minecraft Education, {alumno} aprendió a programar con bloques (MakeCode) para construir mundos, mecanismos automatizados y juegos dentro de Minecraft. El gráfico muestra el aprovechamiento registrado en cada módulo, evidenciando las áreas de mayor dominio y las de oportunidad de refuerzo.",
+  "modulos": [
+    {
+      "numero": 1,
+      "titulo": "El Nuevo Mundo de la Piedra Verde",
+      "descripcion": "{alumno} conoció Minecraft Education y dio sus primeros pasos programando con MakeCode.",
+      "aprendizajes": [
+        "Comandos en MakeCode y control del Agente",
+        "Comandos de movimiento y navegación por laberintos",
+        "El bucle de repetición y la automatización",
+        "Construcción en equipo paso a paso",
+        "Redstone: señales, puertas automáticas y granjas"
+      ],
+      "proyecto": "Estructura automatizada con MakeCode"
+    },
+    {
+      "numero": 2,
+      "titulo": "La Ciudad de la Luz",
+      "descripcion": "{alumno} construyó a gran escala usando coordenadas, bucles y automatización.",
+      "aprendizajes": [
+        "Sistema de coordenadas y construcción precisa",
+        "Bucles anidados para muros y torres",
+        "El Agente construye un puente por código",
+        "Clonación de objetos para construir rápido",
+        "Casa inteligente y trazado de calles"
+      ],
+      "proyecto": "Barrio Inteligente automatizado"
+    },
+    {
+      "numero": 3,
+      "titulo": "Oasis de Lógica: Juegos y Rompecabezas",
+      "descripcion": "{alumno} creó juegos programando eventos, condiciones y variables.",
+      "aprendizajes": [
+        "Eventos y condiciones",
+        "Variables y contadores para la puntuación",
+        "Juegos con trampas, botones y temporizadores",
+        "Zonas de teletransporte",
+        "Prueba y equilibrio del juego"
+      ],
+      "proyecto": "Mi Juego (minijuego propio)"
+    },
+    {
+      "numero": 4,
+      "titulo": "Bosque Mecánico: Automatización",
+      "descripcion": "{alumno} automatizó sistemas complejos con lógica y código.",
+      "aprendizajes": [
+        "Granjas automáticas y recolección de recursos",
+        "Agente Jardinero (plantar y cosechar)",
+        "Cadenas lógicas condicionales",
+        "Clasificador de recursos y almacenamiento",
+        "Granja de monstruos"
+      ],
+      "proyecto": "Granja Inteligente automatizada"
+    },
+    {
+      "numero": 5,
+      "titulo": "La Fortaleza del Creador",
+      "descripcion": "En la etapa final, {alumno} desarrolló su propio proyecto desde la idea hasta el código.",
+      "aprendizajes": [
+        "Generación de ideas y plan del proyecto",
+        "Programación de mecanismos básicos",
+        "Funciones: código reutilizable",
+        "Gestión de eventos y acciones del jugador",
+        "Presentación del proyecto"
+      ],
+      "proyecto": "Proyecto propio (presentado)"
+    }
+  ],
+  "consideraciones": "Durante Minecraft Education, {alumno} desarrolló pensamiento algorítmico y creatividad construyendo y automatizando mundos con código. Las competencias trabajadas fueron:",
+  "competencias": [
+    "Algoritmos y lógica de bucles",
+    "Control del Agente y comandos MakeCode",
+    "Coordenadas y construcción a escala",
+    "Condicionales, eventos y variables",
+    "Automatización de sistemas (redstone y granjas)",
+    "Funciones y estructura del código",
+    "Resolución creativa de problemas"
+  ],
+  "proximo_paso": {
+    "titulo": "Minecraft 2",
+    "texto": "Considerando el interés de {alumno} por construir y automatizar con código, el próximo paso recomendado es Minecraft 2, donde creará proyectos más complejos y afianzará su lógica de programación."
+  }
+}

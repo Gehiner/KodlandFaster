@@ -1,0 +1,141 @@
+{
+  "_ayuda": "Contenido del curso Creatividad Digital Nivel 1 (DC lvl 1). {alumno} se reemplaza por el nombre. Si el reporte no lo asocia a tu grupo, dime el titulo exacto del curso y ajusto el nombre del archivo.",
+  "curso": "Creatividad Digital (Nivel 1)",
+  "idioma": "es",
+  "area_interes": "Arte y Animación Digital",
+  "proximo_nivel": "Creatividad Digital 2",
+  "vision_general": "A lo largo de Creatividad Digital, {alumno} recorrió una jornada creativa dibujando ilustraciones, diseñando personajes y creando sus propias caricaturas animadas. El gráfico muestra el aprovechamiento registrado en cada módulo, evidenciando las áreas de mayor dominio y las de oportunidad de refuerzo.",
+  "modulos": [
+    {
+      "numero": 1,
+      "titulo": "De un Dibujo a tu Primera Caricatura",
+      "descripcion": "{alumno} creó y animó sus primeras ilustraciones en Pixel Art.",
+      "aprendizajes": [
+        "El mundo de los píxeles",
+        "Creación de un personaje de píxeles",
+        "Animación del personaje",
+        "Creación de ayudantes"
+      ],
+      "proyecto": "Ilustración Pixel Art animada"
+    },
+    {
+      "numero": 2,
+      "titulo": "Dibujar con el Ratón",
+      "descripcion": "{alumno} conoció una aplicación de dibujo digital y sus herramientas.",
+      "aprendizajes": [
+        "Explorar el programa de dibujo (Kleki)",
+        "Cómo funcionan las capas",
+        "La importancia del color",
+        "Diseño de una postal"
+      ],
+      "proyecto": "Postal digital"
+    },
+    {
+      "numero": 3,
+      "titulo": "¡Dejemos Fluir la Imaginación!",
+      "descripcion": "{alumno} desarrolló su creatividad generando ideas únicas.",
+      "aprendizajes": [
+        "Más allá de las formas simples",
+        "Reconocer personajes en formas",
+        "Usar fotos como base de un dibujo",
+        "Dibujar música y crear una melodía"
+      ],
+      "proyecto": "Dibujos creativos y música"
+    },
+    {
+      "numero": 4,
+      "titulo": "Diseño de Personajes",
+      "descripcion": "{alumno} aprendió a conceptualizar y dibujar sus propios personajes.",
+      "aprendizajes": [
+        "Elegir la pose y hacer el boceto",
+        "Trabajar con colores y formas",
+        "Agregar detalles"
+      ],
+      "proyecto": "Personaje propio"
+    },
+    {
+      "numero": 5,
+      "titulo": "Fundamentos del Modelado 3D",
+      "descripcion": "{alumno} dio sus primeros pasos en el espacio tridimensional.",
+      "aprendizajes": [
+        "Introducción al espacio 3D",
+        "Modelado de un barco de fantasía",
+        "Modelado de un personaje"
+      ],
+      "proyecto": "Modelo 3D propio"
+    },
+    {
+      "numero": 6,
+      "titulo": "¿Cómo se Crea una Historia? Cómics",
+      "descripcion": "{alumno} aprendió a contar historias a través de cómics.",
+      "aprendizajes": [
+        "Reglas de la narración",
+        "Guiones gráficos (storyboards)",
+        "Creación de paneles de cómic",
+        "Armar una página y diseñar la portada"
+      ],
+      "proyecto": "Cómic propio"
+    },
+    {
+      "numero": 7,
+      "titulo": "Animación Cuadro por Cuadro",
+      "descripcion": "{alumno} creó su primer personaje animado cuadro por cuadro.",
+      "aprendizajes": [
+        "Introducción a la animación cuadro por cuadro (FlipAnim)",
+        "Animar el clima",
+        "Preparar un personaje para animar",
+        "Animar el personaje"
+      ],
+      "proyecto": "Personaje animado"
+    },
+    {
+      "numero": 8,
+      "titulo": "Animaciones con Fotogramas Clave",
+      "descripcion": "{alumno} aprendió a animar con fotogramas clave creando una caricatura.",
+      "aprendizajes": [
+        "Animación de movimientos simples",
+        "Animación de rotación y tamaño",
+        "Creación de una caricatura"
+      ],
+      "proyecto": "Caricatura con fotogramas clave"
+    },
+    {
+      "numero": 9,
+      "titulo": "Edición de Caricaturas",
+      "descripcion": "{alumno} conoció la edición de video para dar vida a sus historias.",
+      "aprendizajes": [
+        "Contar una historia a través de la edición",
+        "Edición de una caricatura (123Apps)",
+        "Pantalla de título, voz en off y música"
+      ],
+      "proyecto": "Caricatura editada con audio"
+    },
+    {
+      "numero": 10,
+      "titulo": "Proyecto de Graduación",
+      "descripcion": "En la etapa final, {alumno} creó una caricatura completa de principio a fin.",
+      "aprendizajes": [
+        "Historia y storyboard",
+        "Dibujo de fondos y ambientes",
+        "Trabajo de animación",
+        "Edición, voces en off y presentación"
+      ],
+      "proyecto": "Caricatura completa (presentada)"
+    }
+  ],
+  "consideraciones": "Durante Creatividad Digital, {alumno} exploró múltiples formas del arte digital —ilustración, diseño de personajes, 3D, cómics y animación— desarrollando su creatividad y expresión. Las competencias trabajadas fueron:",
+  "competencias": [
+    "Ilustración digital y Pixel Art",
+    "Uso de capas y color",
+    "Diseño de personajes",
+    "Modelado 3D básico",
+    "Narración visual y cómics",
+    "Animación (cuadro por cuadro y fotogramas clave)",
+    "Edición de video",
+    "Creatividad y expresión"
+  ],
+  "proximo_paso": {
+    "titulo": "Creatividad Digital 2",
+    "texto": "Considerando el talento creativo de {alumno}, el próximo paso recomendado es Creatividad Digital 2, donde profundizará en la ilustración, la animación y la creación de proyectos más ambiciosos."
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "_ayuda": "Contenido del curso Dibujo en papel (Drawing). {alumno} se reemplaza por el nombre. Si el reporte no lo asocia a tu grupo, dime el titulo exacto del curso y ajusto el nombre del archivo.",
+  "curso": "Dibujo en Papel",
+  "idioma": "es",
+  "area_interes": "Dibujo e Ilustración",
+  "proximo_nivel": "Ilustración",
+  "vision_general": "A lo largo del curso de Dibujo, {alumno} recorrió una jornada artística aprendiendo a dibujar con sentido: proporción, estilo, realismo y expresión propia, construyendo un portafolio de ilustraciones. El gráfico muestra el aprovechamiento registrado en cada módulo, evidenciando las áreas de mayor dominio y las de oportunidad de refuerzo.",
+  "modulos": [
+    {
+      "numero": 1,
+      "titulo": "Introducción y Estilización",
+      "descripcion": "{alumno} tomó confianza y aprendió conceptos esenciales del dibujo.",
+      "aprendizajes": [
+        "Crear un animal a partir de una forma",
+        "Criaturas a partir de líneas",
+        "Primer retrato",
+        "Proporción y contraste"
+      ],
+      "proyecto": "Cuatro ilustraciones estilizadas"
+    },
+    {
+      "numero": 2,
+      "titulo": "Bocetos",
+      "descripcion": "{alumno} perdió el miedo a equivocarse y aprendió a bocetar.",
+      "aprendizajes": [
+        "Dibujar cualquier cosa rápidamente",
+        "Degradados",
+        "Dibujar un personaje favorito",
+        "Perspectiva (un edificio)"
+      ],
+      "proyecto": "Cuatro bocetos temáticos"
+    },
+    {
+      "numero": 3,
+      "titulo": "Dibujo al Estilo Anime",
+      "descripcion": "{alumno} aprendió las características del estilo anime.",
+      "aprendizajes": [
+        "Fundamentos del estilo anime",
+        "Retratos y poses de personajes manga",
+        "Cómo dibujar manos",
+        "Crear un héroe propio"
+      ],
+      "proyecto": "Personaje de anime propio"
+    },
+    {
+      "numero": 4,
+      "titulo": "Creación de un Cómic",
+      "descripcion": "{alumno} aprendió a contar historias e ilustrarlas en cómics.",
+      "aprendizajes": [
+        "Dibujar emociones",
+        "Crear una buena historia",
+        "Dibujar un cómic propio",
+        "Presentación en grupo"
+      ],
+      "proyecto": "Cómic propio"
+    },
+    {
+      "numero": 5,
+      "titulo": "Introducción al Realismo",
+      "descripcion": "{alumno} aprendió a dar volumen y realismo a sus dibujos.",
+      "aprendizajes": [
+        "Cómo dibujar volumen",
+        "Sombreado de formas complejas",
+        "Dibujo de un animal realista",
+        "Luz y sombra"
+      ],
+      "proyecto": "Cuatro ilustraciones con luz y sombra"
+    },
+    {
+      "numero": 6,
+      "titulo": "Retratos y Paisajes Realistas",
+      "descripcion": "{alumno} aprendió a dibujar retratos y paisajes realistas.",
+      "aprendizajes": [
+        "Paisaje con perspectiva",
+        "Cómo dibujar un ojo real",
+        "Retrato de frente",
+        "Retrato de perfil"
+      ],
+      "proyecto": "Un paisaje y dos retratos realistas"
+    },
+    {
+      "numero": 7,
+      "titulo": "Aprendiendo de los Maestros",
+      "descripcion": "{alumno} conoció el estilo de grandes artistas y dibujó a su manera.",
+      "aprendizajes": [
+        "Paisaje al estilo de van Gogh",
+        "Retrato al estilo de Picasso",
+        "Paisaje al estilo de Monet",
+        "Elegir un maestro y dibujar según su estilo"
+      ],
+      "proyecto": "Ilustraciones al estilo de los maestros"
+    },
+    {
+      "numero": 8,
+      "titulo": "Explorando tu Propio Estilo",
+      "descripcion": "{alumno} exploró estilos de sus caricaturas y juegos favoritos para hallar el suyo.",
+      "aprendizajes": [
+        "Dibujar al estilo de series animadas",
+        "Personaje al estilo de un videojuego",
+        "Ilustración al estilo de un libro",
+        "Crear una ilustración con estilo propio"
+      ],
+      "proyecto": "Ilustraciones con estilo propio"
+    },
+    {
+      "numero": 9,
+      "titulo": "Proyecto en Equipo",
+      "descripcion": "{alumno} desarrolló habilidades de trabajo en equipo en un proyecto conjunto.",
+      "aprendizajes": [
+        "Elección del tema del proyecto",
+        "Asignación de roles y estilo",
+        "Desarrollo de los componentes",
+        "Presentación en equipo"
+      ],
+      "proyecto": "Proyecto de dibujo en equipo"
+    },
+    {
+      "numero": 10,
+      "titulo": "Proyecto Final",
+      "descripcion": "En la etapa final, {alumno} desarrolló y presentó una ilustración original.",
+      "aprendizajes": [
+        "Concepto de una ilustración original",
+        "Diseño del arte final",
+        "Preparación de la presentación",
+        "Presentación final y graduación"
+      ],
+      "proyecto": "Ilustración original (portafolio)"
+    }
+  ],
+  "consideraciones": "Durante el curso de Dibujo, {alumno} desarrolló técnica, estilo y confianza artística, reuniendo un portafolio de ilustraciones propias. Las competencias trabajadas fueron:",
+  "competencias": [
+    "Proporción, contraste y composición",
+    "Bocetado y perspectiva",
+    "Estilos de dibujo (anime, realismo)",
+    "Narración visual y cómics",
+    "Luz, sombra y volumen",
+    "Retratos y paisajes",
+    "Estilo propio",
+    "Trabajo en equipo y presentación"
+  ],
+  "proximo_paso": {
+    "titulo": "Ilustración",
+    "texto": "Considerando el talento de {alumno} para el dibujo, el próximo paso recomendado es un curso de Ilustración, donde llevará su técnica y estilo a proyectos más completos y a herramientas digitales."
+  }
+}
