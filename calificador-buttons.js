@@ -12,7 +12,7 @@
     { id: 'ping',               texto: '🔌 Probar puente',         confirmar: false },
     { id: 'simular',            texto: '👁 Simular (no califica)',  confirmar: false },
     { id: 'probar_comentarios', texto: '💬 Vista previa comentarios', confirmar: false },
-    { id: 'probar_ia',          texto: '🤖 Probar IA',             confirmar: false },
+    { id: 'probar_ia',          texto: '🧪 Probar IA',             confirmar: false },
     { id: 'calificar',          texto: '✅ Calificar TODO',         confirmar: true },
     { id: 'calificar_comentar', texto: '✅💬 Calificar + comentar', confirmar: true },
     { id: 'comentar_grupo',     texto: '📝 Comentar un grupo',      confirmar: true },

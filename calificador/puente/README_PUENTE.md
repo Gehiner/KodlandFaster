@@ -55,7 +55,7 @@ falta, escribes datos como el código de un grupo):
 | 🔌 Probar puente | Comprueba que la conexión funciona |
 | 👁 Simular | Muestra qué calificaría, sin tocar nada |
 | 💬 Vista previa comentarios | Muestra nota y comentario sin guardarlos |
-| 🤖 Probar IA | Verifica la conexión con la IA |
+| 🧪 Probar IA | Verifica la conexión con la IA |
 | ✅ Calificar TODO | Califica las tareas pendientes (pide confirmación) |
 | ✅💬 Calificar + comentar | Califica y deja comentarios (pide confirmación) |
 | 📝 Comentar un grupo | Un grupo concreto (pide confirmación) |

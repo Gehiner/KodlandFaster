@@ -6,6 +6,7 @@ calificador/ia_config.json
 # Datos generados (contienen información de alumnos): NO subir
 calificador/depuracion/
 calificador/registros/
+calificador/reportes/salida/
 
 # Puente (Native Messaging): el manifest generado tiene rutas de tu máquina
 # y el ID de tu extensión; el log es local. Se suben solo los .example y scripts.
