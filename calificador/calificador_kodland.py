@@ -2535,6 +2535,419 @@ def probar_comentario(ctx, page, elegidos, args, registro):
 
 # -------------------------------- diagnóstico --------------------------------
 
+def generar_boletines_grupo(ctx, page, grupo, corte, pw):
+    """Genera un boletín de progreso (PDF) por cada alumno del grupo, con datos
+    reales de la API. corte: 'actual', 'curso' o un nº de módulo. No califica."""
+    sys.path.insert(0, str(DIR_BASE))
+    import generar_boletin as gbol
+
+    m = re.search(r"/groups/(\d+)", grupo.get("url", "") or "")
+    if not m:
+        log(f"   no pude leer el id del grupo ({grupo.get('url')})")
+        return 0
+    gid = m.group(1)
+    paginas = [p for p in ctx.pages] or [page]
+
+    # nombre del curso y del tutor
+    curso, prof = "", ""
+    r, _ = api_llamar_multi(paginas, f"/student_groups/{gid}/get_general_info_for_group_backoffice_page")
+    if r.get("status") == 200 and isinstance(r.get("cuerpo"), dict):
+        c = r["cuerpo"].get("course") or {}
+        curso = re.sub(r"^\[\d+\]", "", c.get("title", "") or "").split("[")[0].strip()
+        gt = r["cuerpo"].get("group_teacher") or {}
+        if isinstance(gt, dict):
+            prof = gt.get("full_name") or ""
+
+    # alumnos del grupo (notas + asistencia de todos, en una sola llamada)
+    r, _ = api_llamar_multi(paginas, f"/student_groups/{gid}/get_students_main_data")
+    if r.get("status") != 200 or not isinstance(r.get("cuerpo"), list):
+        log(f"   no pude leer los alumnos del grupo {gid} (status {r.get('status')})")
+        return 0
+    alumnos = r["cuerpo"]
+    log(f"   {len(alumnos)} alumnos en el grupo; curso: {curso or '—'}")
+
+    # carpeta por grupo y corte, p.ej.  COL12345_reporte_M4L2  /  ..._reporte_curso
+    codigo = grupo.get("codigo") or gid
+    if corte == "curso":
+        etq_corte = "curso"
+    elif isinstance(corte, int):
+        etq_corte = f"M{corte}"
+    else:  # "actual": la lección actual del grupo
+        etq_corte = f"M{grupo.get('mod')}L{grupo.get('lec')}"
+    carpeta = re.sub(r"[^A-Za-z0-9_-]+", "_", f"{codigo}_reporte_{etq_corte}")
+    salida = DIR_BASE / "reportes" / "salida" / carpeta
+    salida.mkdir(parents=True, exist_ok=True)
+
+    # un navegador headless para todos los PDF (reusa pw, sin anidar sync_playwright)
+    nav = None
+    for canal in ("chrome", "msedge", None):
+        try:
+            nav = pw.chromium.launch(channel=canal, headless=True) if canal else pw.chromium.launch(headless=True)
+            break
+        except Exception:
+            nav = None
+    if nav is None:
+        log("   no pude abrir un navegador headless para los PDF")
+        return 0
+    rpage = nav.new_page()
+
+    hechos = 0
+    omitidos = 0
+    for s in alumnos:
+        main = s.get("main_info", {}) or {}
+        prog = s.get("progress_info", []) or []
+        sid = main.get("student_id")
+        nombre = main.get("full_name") or f"Alumno {sid}"
+        # solo alumnos inscritos/activos (no expulsados, congelados, dados de baja…)
+        estado = (main.get("status") or "").lower()
+        if estado != "active":
+            omitidos += 1
+            log(f"   (omito {nombre}: no inscrito [{main.get('status')}])")
+            continue
+        orden = [l.get("lesson_id") for mm in prog for l in mm.get("lessons_data", [])]
+        last = main.get("last_lesson_id")
+        idx = orden.index(last) if last in orden else (len(orden) - 1 if orden else -1)
+
+        def en_scope(mn, lid):
+            if corte == "curso":
+                return True
+            if isinstance(corte, int):
+                return mn == corte
+            return lid in orden and orden.index(lid) <= idx  # "actual"
+
+        # contar tareas enviadas (clase + deberes) por lección en alcance
+        tareas_by_lid = {}
+        for mm in prog:
+            mn = mm.get("module_number")
+            for l in mm.get("lessons_data", []):
+                lid = l.get("lesson_id")
+                if not en_scope(mn, lid):
+                    continue
+                rc, _ = api_llamar_multi(paginas, f"/students/{sid}/lesson/{lid}/get_progress_for_class_tasks/")
+                rh, _ = api_llamar_multi(paginas, f"/students/{sid}/lesson/{lid}/get_progress_for_homework_tasks/")
+                env, tot = gbol.contar_tareas(
+                    rc.get("cuerpo") if rc.get("status") == 200 else None,
+                    rh.get("cuerpo") if rh.get("status") == 200 else None)
+                tareas_by_lid[lid] = (env, tot)
+
+        try:
+            datos = gbol.datos_desde_smd(main, prog, tareas_by_lid, corte, curso, prof)
+            html = gbol.build_html(datos)
+            base = "Boletin " + "".join(ch for ch in nombre if ch.isalnum() or ch in " _-").strip()
+            rpage.set_content(html, wait_until="networkidle")
+            rpage.pdf(path=str(salida / (base + ".pdf")), format="A4",
+                      print_background=True,
+                      margin={"top": "12mm", "bottom": "14mm", "left": "12mm", "right": "12mm"})
+            hechos += 1
+            log(f"   ✓ {nombre}")
+        except Exception as e:
+            log(f"   ✗ {nombre}: {e}")
+
+    try:
+        nav.close()
+    except Exception:
+        pass
+    log(f"Boletines generados: {hechos} (omitidos por no inscritos: {omitidos}) en {salida}")
+    return hechos
+
+
+def generar_reportes_grupo(ctx, page, grupo, pw):
+    """Genera un 'Reporte de desarrollo' (PDF narrativo por módulo) por cada
+    alumno inscrito del grupo, con % reales. Necesita reportes/curso_<slug>.json
+    con el contenido del curso (ver curso.example.json). No califica."""
+    sys.path.insert(0, str(DIR_BASE))
+    import generar_reporte as grep
+    import generar_boletin as gbol
+    import glob as _glob
+
+    m = re.search(r"/groups/(\d+)", grupo.get("url", "") or "")
+    if not m:
+        log(f"   no pude leer el id del grupo ({grupo.get('url')})")
+        return 0
+    gid = m.group(1)
+    paginas = [p for p in ctx.pages] or [page]
+
+    # curso + tutor
+    titulo, prof = "", ""
+    r, _ = api_llamar_multi(paginas, f"/student_groups/{gid}/get_general_info_for_group_backoffice_page")
+    if r.get("status") == 200 and isinstance(r.get("cuerpo"), dict):
+        c = r["cuerpo"].get("course") or {}
+        titulo = c.get("title", "") or ""
+        gt = r["cuerpo"].get("group_teacher") or {}
+        if isinstance(gt, dict):
+            prof = gt.get("full_name") or ""
+
+    # buscar el JSON de contenido del curso: todas las palabras del slug deben
+    # aparecer en el título del curso; si varios encajan, gana el más específico
+    # (más palabras). Así "roblox_2" gana a "roblox" para un grupo de Roblox 2.
+    palabras_txt = set(w for w in re.split(r"[^a-z0-9]+", titulo.lower()) if w)
+    candidatos = []
+    for rc in _glob.glob(str(DIR_BASE / "reportes" / "curso_*.json")):
+        slug = Path(rc).stem.replace("curso_", "").lower()
+        if not slug or slug == "example":
+            continue
+        palabras_slug = [w for w in re.split(r"[^a-z0-9]+", slug) if w]
+        if palabras_slug and all(w in palabras_txt for w in palabras_slug):
+            candidatos.append((len(palabras_slug), rc))
+    ruta_curso = max(candidatos)[1] if candidatos else None
+    if not ruta_curso:
+        log(f"   no hay contenido para el curso «{titulo}». Crea "
+            f"reportes/curso_<curso>.json (ver curso.example.json) y reintenta.")
+        return 0
+    curso = json.loads(Path(ruta_curso).read_text(encoding="utf-8"))
+    log(f"   curso: {curso.get('curso')} (contenido: {Path(ruta_curso).name})")
+
+    r, _ = api_llamar_multi(paginas, f"/student_groups/{gid}/get_students_main_data")
+    if r.get("status") != 200 or not isinstance(r.get("cuerpo"), list):
+        log(f"   no pude leer los alumnos del grupo {gid} (status {r.get('status')})")
+        return 0
+    alumnos = r["cuerpo"]
+
+    codigo = grupo.get("codigo") or gid
+    carpeta = re.sub(r"[^A-Za-z0-9_-]+", "_", f"{codigo}_desarrollo")
+    salida = DIR_BASE / "reportes" / "salida" / carpeta
+    salida.mkdir(parents=True, exist_ok=True)
+
+    nav = None
+    for canal in ("chrome", "msedge", None):
+        try:
+            nav = pw.chromium.launch(channel=canal, headless=True) if canal else pw.chromium.launch(headless=True)
+            break
+        except Exception:
+            nav = None
+    if nav is None:
+        log("   no pude abrir un navegador headless para los PDF")
+        return 0
+    rpage = nav.new_page()
+
+    ATT = {2: "presente", 1: "justificada", 0: "ausente"}
+    hechos = omitidos = 0
+    for s in alumnos:
+        main = s.get("main_info", {}) or {}
+        prog = s.get("progress_info", []) or []
+        sid = main.get("student_id")
+        nombre = main.get("full_name") or f"Alumno {sid}"
+        if (main.get("status") or "").lower() != "active":
+            omitidos += 1
+            continue
+        try:
+            pct = grep.pct_por_modulo(prog)
+            nrea = len(pct)
+            mods_ord = sorted(prog, key=lambda mm: mm.get("module_number", 0))[:nrea]
+            # puntos por módulo (ya combinados), tareas (clase+deberes) por lección,
+            # y asistencia — todo para el documento combinado.
+            puntos, tareas, ses = [], [], []
+            for mm in mods_ord:
+                puntos.append((mm.get("module_current_grade", 0) or 0, mm.get("module_max_grade", 0) or 0))
+                env = tot = 0
+                for l in mm.get("lessons_data", []):
+                    lid = l.get("lesson_id")
+                    rc, _ = api_llamar_multi(paginas, f"/students/{sid}/lesson/{lid}/get_progress_for_class_tasks/")
+                    rh, _ = api_llamar_multi(paginas, f"/students/{sid}/lesson/{lid}/get_progress_for_homework_tasks/")
+                    e, t = gbol.contar_tareas(rc.get("cuerpo") if rc.get("status") == 200 else None,
+                                              rh.get("cuerpo") if rh.get("status") == 200 else None)
+                    env += e
+                    tot += t
+                    st = l.get("attendance_status")
+                    if st in ATT:
+                        ses.append({"fecha": f"M{mm.get('module_number')} L{l.get('lesson_number')}",
+                                    "estado": ATT[st]})
+                tareas.append((env, tot))
+            asis = {"asistidas": sum(1 for x in ses if x["estado"] == "presente"),
+                    "total": len(ses), "sesiones": ses}
+            alumno = {"alumno": nombre, "profesor": prof, "pct": pct,
+                      "puntos": puntos, "tareas": tareas, "asistencia": asis}
+            html = grep.build_html(curso, alumno)
+            base = "".join(ch for ch in nombre if ch.isalnum() or ch in " _-").strip() or "alumno"
+            rpage.set_content(html, wait_until="networkidle")
+            rpage.pdf(path=str(salida / (base + ".pdf")), format="A4",
+                      print_background=True,
+                      margin={"top": "0", "bottom": "0", "left": "0", "right": "0"})
+            hechos += 1
+            log(f"   ✓ {nombre} ({nrea} módulos)")
+        except Exception as e:
+            log(f"   ✗ {nombre}: {e}")
+    try:
+        nav.close()
+    except Exception:
+        pass
+    log(f"Reportes generados: {hechos} (omitidos por no inscritos: {omitidos}) en {salida}")
+    return hechos
+
+
+def descubrir_asistencia(page):
+    """Captura las llamadas de API mientras el profesor abre la vista de asistencia,
+    para identificar de dónde leerla. No califica ni cambia nada."""
+    llamadas = []       # "STATUS METHOD url"
+    candidatos = []     # (url, resp) que parecen de progreso/asistencia
+    vistos = set()
+    # ruido de catálogos/config que no aporta (para no volcar cuerpos gigantes):
+    RUIDO = ("get_countries", "get_timezones", "get_data_for_filters", "/utils/",
+             "/config", "credentials", "business_branches", "tutor_payroll",
+             "rating/config", "groups/types", "cdn-cgi", "sso.", "zoom-service",
+             "get_teachers_groups", "get_course_list", "user_groups/my")
+
+    def al_responder(resp):
+        try:
+            if resp.request.resource_type not in ("xhr", "fetch"):
+                return
+            u = resp.url
+            linea = f"{resp.status} {resp.request.method} {u}"
+            if linea in vistos:
+                return
+            vistos.add(linea)
+            llamadas.append(linea)
+            low = u.lower()
+            # guardar el cuerpo de TODA respuesta de datos del backoffice (GET 200):
+            # así encontramos la asistencia venga con el nombre que venga.
+            if ("backoffice.kodland.org/api" in low and resp.request.method == "GET"
+                    and resp.status == 200 and not any(x in low for x in RUIDO)):
+                candidatos.append((u, resp))
+        except Exception:
+            pass
+
+    # Escuchar TODAS las pestañas (la vista del alumno suele abrirse en otra,
+    # o Chrome pudo restaurar pestañas previas de tu sesión).
+    ctx = page.context
+    def enganchar(pg):
+        try:
+            pg.on("response", al_responder)
+        except Exception:
+            pass
+    for pg in list(ctx.pages):
+        enganchar(pg)
+    try:
+        ctx.on("page", enganchar)
+    except Exception:
+        pass
+
+    try:
+        page.goto(URL_PROFES, wait_until="domcontentloaded")
+    except Exception:
+        pass
+
+    print()
+    print("──────────────────────────────────────────────────")
+    print("  MUESTRA DE PROGRESO Y ASISTENCIA (no se califica nada)")
+    print("──────────────────────────────────────────────────")
+    print("  IMPORTANTE: navega DENTRO de la ventana de Chrome que abrió")
+    print("  este programa (no en tu Chrome normal).")
+    print("  1) Entra a un GRUPO.")
+    print("  2) HAZ CLIC en el NOMBRE de un ALUMNO para abrir SU detalle")
+    print("     individual (ahí se ven sus notas y su asistencia verde/")
+    print("     amarillo/rojo por lección). Ese clic es lo que hay que capturar.")
+    print("  3) Muévete un poco por esa vista del alumno (o F5 para recargar).")
+    print("  4) Vuelve a ESTA ventana negra y pulsa ENTER.")
+    print()
+    # Espera ACTIVA: hay que "bombear" el bucle de Playwright para que se
+    # disparen los callbacks de respuesta (un input() a secas los congela).
+    try:
+        import msvcrt
+    except Exception:
+        msvcrt = None
+
+    def _pump():
+        for pg in list(ctx.pages):
+            try:
+                pg.wait_for_timeout(300)
+                return
+            except Exception:
+                continue
+        time.sleep(0.3)
+
+    if msvcrt:
+        log("Escuchando… abre la vista del alumno y pulsa ENTER aquí al terminar (máx 6 min).")
+        fin = time.time() + 360
+        while time.time() < fin:
+            _pump()
+            try:
+                if msvcrt.kbhit() and msvcrt.getwch() in ("\r", "\n"):
+                    break
+            except Exception:
+                pass
+    else:
+        log("Escuchando 90 s mientras navegas por la vista del alumno…")
+        fin = time.time() + 90
+        while time.time() < fin:
+            _pump()
+
+    detalle = []
+    for u, resp in candidatos:
+        try:
+            txt = resp.text()
+        except Exception:
+            txt = ""
+        if len(txt) > 20000:
+            cuerpo = txt[:20000] + "…(recortado)"
+        else:
+            try:
+                cuerpo = json.loads(txt)
+            except Exception:
+                cuerpo = txt or "(vacío)"
+        detalle.append({"url": u, "cuerpo": cuerpo})
+
+    # Detectar alumno+grupo en lo capturado y llamar directamente a los
+    # endpoints exactos (así traemos la asistencia en texto legible y validamos
+    # que se pueden consultar por API para el boletín).
+    consultas_directas = {}
+    sid = gid = None
+    for linea in llamadas + [c["url"] for c in detalle]:
+        m = re.search(r"/students/(\d+)/group/(\d+)/", linea)
+        if m:
+            sid, gid = m.group(1), m.group(2)
+            break
+    if sid and gid:
+        log(f"Consultando endpoints directos para alumno {sid}, grupo {gid}…")
+        rutas = {
+            "attendances": f"/students/{sid}/group/{gid}/attendances/",
+            "get_progress_total": f"/students/{sid}/group/{gid}/get_progress_total/",
+            "get_progress_for_class_modules": f"/students/{sid}/group/{gid}/get_progress_for_class_modules/",
+            "get_progress_for_homework_modules": f"/students/{sid}/group/{gid}/get_progress_for_homework_modules/",
+            "homeworks": f"/students/{sid}/homeworks/{gid}/",
+        }
+        paginas = [p for p in ctx.pages] or [page]
+        for nombre, rt in rutas.items():
+            r, intentos = api_llamar_multi(paginas, rt)
+            consultas_directas[nombre] = {"ruta": rt, "status": r.get("status"),
+                                          "cuerpo": r.get("cuerpo")}
+            log(f"   {nombre}: status {r.get('status')}")
+        # tareas por lección (para contar "enviadas" de clase y deberes): solo
+        # las primeras lecciones ya dadas, para ver los valores de estado reales.
+        att_body = consultas_directas.get("attendances", {}).get("cuerpo") or []
+        dadas = [a.get("lesson_id") for a in att_body
+                 if isinstance(a, dict) and a.get("timetable_status") == "Открыт"][:3]
+        for lid in dadas:
+            for tipo in ("class", "homework"):
+                rt = f"/students/{sid}/lesson/{lid}/get_progress_for_{tipo}_tasks/"
+                r, _ = api_llamar_multi(paginas, rt)
+                consultas_directas[f"{tipo}_tasks_L{lid}"] = {
+                    "ruta": rt, "status": r.get("status"), "cuerpo": r.get("cuerpo")}
+                log(f"   {tipo}_tasks L{lid}: status {r.get('status')}")
+    else:
+        log("No detecté alumno+grupo; abre el detalle de UN alumno y reintenta.")
+
+    try:
+        urls_tabs = [p.url for p in ctx.pages]
+    except Exception:
+        urls_tabs = [page.url]
+    DIR_DEBUG.mkdir(parents=True, exist_ok=True)
+    marca = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+    ruta = DIR_DEBUG / f"asistencia_descubrimiento_{marca}.json"
+    datos = {"pestanas_abiertas": urls_tabs, "total_llamadas": len(llamadas),
+             "alumno_detectado": sid, "grupo_detectado": gid,
+             "consultas_directas": consultas_directas,
+             "llamadas": llamadas, "candidatos_asistencia": detalle}
+    ruta.write_text(json.dumps(datos, ensure_ascii=False, indent=2, default=str),
+                    encoding="utf-8")
+    print()
+    log(f"Guardado: {ruta}")
+    if detalle:
+        log(f"Detecté {len(detalle)} llamada(s) de progreso/asistencia.")
+    else:
+        log("No hubo candidatos por nombre; revisa la lista 'llamadas' del archivo.")
+    print("  Compárteme ese archivo (traerá los puntos y la asistencia reales).")
+
+
 def modo_diagnostico(page):
     """No califica nada: recopila capturas, HTML y datos de detección clave."""
     log("MODO DIAGNÓSTICO: guardaré capturas y HTML en la carpeta 'depuracion'.")
@@ -2615,6 +3028,18 @@ def main():
     ap.add_argument("--lento", action="store_true", help="modo lento (más pausas, útil para observar)")
     ap.add_argument("--diagnostico", action="store_true",
                     help="no califica: guarda capturas y HTML de las páginas clave en depuracion/")
+    ap.add_argument("--descubrir-asistencia", action="store_true",
+                    help="no califica: captura las llamadas de API de la vista de asistencia "
+                         "para saber de dónde leerla (guarda un JSON en depuracion/)")
+    ap.add_argument("--boletin", action="store_true",
+                    help="no califica: genera un boletín de progreso (PDF) por alumno de "
+                         "los grupos elegidos, en reportes/salida/")
+    ap.add_argument("--corte", default="actual",
+                    help="alcance del boletín: 'actual' (hasta la lección dada), 'curso' "
+                         "(todo) o un nº de módulo")
+    ap.add_argument("--reporte", action="store_true",
+                    help="no califica: genera un 'reporte de desarrollo' (PDF narrativo por "
+                         "módulo) por alumno inscrito; necesita reportes/curso_<curso>.json")
     ap.add_argument("--comentar", choices=["plantillas", "ia"], default=None,
                     help="tras calificar cada tarea, generar un comentario: "
                          "'plantillas' (análisis local del código, sin internet) o "
@@ -2717,6 +3142,9 @@ def main():
             if args.diagnostico:
                 modo_diagnostico(page)
                 return
+            if args.descubrir_asistencia:
+                descubrir_asistencia(page)
+                return
             log("Cargando la lista de grupos…")
             grupos = listar_grupos(page)
             log(f"Grupos encontrados: {len(grupos)}")
@@ -2749,6 +3177,27 @@ def main():
 
             log(f"Grupos a revisar: {len(elegidos)} (empezando por los más recientes)")
             print()
+
+            if args.boletin:
+                corte = int(args.corte) if str(args.corte).isdigit() else args.corte
+                log(f"Generando boletines de progreso (alcance: {corte})…")
+                for n, g in enumerate(elegidos, 1):
+                    log(f"[{n}/{len(elegidos)}] Grupo {g['codigo']}")
+                    try:
+                        generar_boletines_grupo(ctx, page, g, corte, pw)
+                    except Exception as e:
+                        log(f"   error en el grupo {g['codigo']}: {e}")
+                return
+
+            if args.reporte:
+                log("Generando reportes de desarrollo…")
+                for n, g in enumerate(elegidos, 1):
+                    log(f"[{n}/{len(elegidos)}] Grupo {g['codigo']}")
+                    try:
+                        generar_reportes_grupo(ctx, page, g, pw)
+                    except Exception as e:
+                        log(f"   error en el grupo {g['codigo']}: {e}")
+                return
 
             if args.probar_comentario:
                 probar_comentario(ctx, page, elegidos, args, registro)

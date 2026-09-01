@@ -1,0 +1,171 @@
+{
+  "_ayuda": "Copia este archivo como 'curso_<nombre>.json' y rellénalo con el contenido de TU curso. {alumno} se reemplaza por el nombre del alumno. Los % por módulo salen de los datos del alumno (no van aquí).",
+  "curso": "Desenvolvedor de Jogos Roblox",
+  "idioma": "pt",
+  "area_interes": "Criação de Jogos",
+  "proximo_nivel": "Python 1",
+  "vision_general": "Ao longo do curso de Desenvolvedor de Jogos Roblox, {alumno} percorreu uma jornada completa de 10 módulos, evoluindo da introdução ao Roblox Studio até a publicação de projetos próprios. O gráfico abaixo mostra o aproveitamento registrado em cada módulo, evidenciando os pontos de maior domínio e as áreas com oportunidade de reforço.",
+  "modulos": [
+    {
+      "numero": 1,
+      "titulo": "Introdução ao Roblox Studio e Primeiros Projetos",
+      "descripcion": "{alumno} conheceu a plataforma Roblox Studio e aprendeu os fundamentos da criação de jogos digitais.",
+      "aprendizajes": [
+        "Navegação pela interface do Roblox Studio",
+        "Manipulação da câmera e dos objetos do cenário",
+        "Edição de terrenos e mapas",
+        "Utilização da Toolbox",
+        "Construção de estruturas 3D utilizando blocos",
+        "Personalização de cores e materiais",
+        "Primeiros conceitos de programação",
+        "Introdução às variáveis e depuração de erros"
+      ],
+      "proyecto": "Jogo “Salvando o Mundo”"
+    },
+    {
+      "numero": 2,
+      "titulo": "Introdução à Programação em LUA",
+      "descripcion": "{alumno} iniciou seu contato com a linguagem de programação LUA, utilizada dentro do Roblox.",
+      "aprendizajes": [
+        "Criação de scripts básicos",
+        "Programação de obstáculos",
+        "Manipulação de propriedades dos objetos através de código",
+        "Conceitos básicos de física no Roblox",
+        "Utilização de motores e movimentação automática",
+        "Controle da saúde do jogador"
+      ],
+      "proyecto": "Tower of Hell – Parte 1"
+    },
+    {
+      "numero": 3,
+      "titulo": "Expansão de Funcionalidades e Interatividade",
+      "descripcion": "{alumno} aprofundou os conhecimentos em programação e interação entre objetos.",
+      "aprendizajes": [
+        "Criação de obstáculos avançados",
+        "Objetos animados e em movimento",
+        "Elementos interativos acionados pelo jogador",
+        "Introdução ao Surface GUI",
+        "Criação de checkpoints",
+        "Boosts de velocidade",
+        "Desenvolvimento de percursos de parkour"
+      ],
+      "proyecto": "Tower of Hell – Parte 2"
+    },
+    {
+      "numero": 4,
+      "titulo": "Desenvolvimento de Jogos de Corrida",
+      "descripcion": "{alumno} trabalhou conceitos mais avançados de design de jogos e criação de ambientes.",
+      "aprendizajes": [
+        "Planejamento de pistas de corrida",
+        "Construção de cenários personalizados",
+        "Configuração de veículos",
+        "Ajustes de física dos carros",
+        "Criação de efeitos visuais",
+        "Interface do usuário (UI)",
+        "Sistema de respawn",
+        "Corridas cronometradas"
+      ],
+      "proyecto": "Jogo de Corrida"
+    },
+    {
+      "numero": 5,
+      "titulo": "Criação de Mundos e Personagens",
+      "descripcion": "{alumno} explorou aspectos narrativos e criativos da criação de jogos.",
+      "aprendizajes": [
+        "Desenvolvimento colaborativo de mundos",
+        "Criação de NPCs (personagens não jogáveis)",
+        "Personalização de personagens",
+        "Criação de animações",
+        "Desenvolvimento de diálogos",
+        "Construção de missões e mini-quests"
+      ],
+      "proyecto": "Jogo de Aventura – Parte 1"
+    },
+    {
+      "numero": 6,
+      "titulo": "Economia e Sistema de Loja",
+      "descripcion": "{alumno} conheceu conceitos importantes de sistemas utilizados em jogos modernos.",
+      "aprendizajes": [
+        "Criação de moedas virtuais",
+        "Sistemas de coleta de recursos",
+        "Ferramentas de mineração e coleta",
+        "Interface gráfica (GUI)",
+        "Construção de lojas dentro do jogo",
+        "Sistema de troca de moedas",
+        "Ambientação e imersão"
+      ],
+      "proyecto": "Jogo de Aventura – Parte 2"
+    },
+    {
+      "numero": 7,
+      "titulo": "Monetização e Publicação",
+      "descripcion": "{alumno} teve contato com conceitos utilizados por desenvolvedores profissionais.",
+      "aprendizajes": [
+        "Sistema de conquistas (Badges)",
+        "Criação de pets",
+        "GamePass",
+        "Fundamentos de monetização",
+        "Itens premium",
+        "Configurações avançadas do jogo",
+        "Servidores privados",
+        "Publicação de projetos online"
+      ],
+      "proyecto": "Conclusão do Jogo de Aventura"
+    },
+    {
+      "numero": 8,
+      "titulo": "Variáveis e Funções",
+      "descripcion": "{alumno} aprofundou seus conhecimentos em lógica de programação.",
+      "aprendizajes": [
+        "Utilização de variáveis",
+        "Criação e utilização de funções",
+        "Organização de códigos",
+        "Leitura e adaptação de scripts prontos",
+        "Implementação de novas funcionalidades"
+      ],
+      "proyecto": "O Chão é Lava"
+    },
+    {
+      "numero": 9,
+      "titulo": "Condicionais e Loops",
+      "descripcion": "{alumno} trabalhou conceitos fundamentais para qualquer programador.",
+      "aprendizajes": [
+        "Estruturas condicionais (if/else)",
+        "Loops de repetição (for)",
+        "Tomada de decisões através de código",
+        "Automatização de processos",
+        "Ampliação de funcionalidades utilizando scripts"
+      ],
+      "proyecto": "Mini-jogo “Desvie do Obstáculo”"
+    },
+    {
+      "numero": 10,
+      "titulo": "Projeto Final e Formatura",
+      "descripcion": "Na etapa final do curso, {alumno} teve a oportunidade de aplicar os conhecimentos adquiridos ao longo de toda a jornada.",
+      "aprendizajes": [
+        "Planejamento de jogos",
+        "Criação de mecânicas próprias",
+        "Desenvolvimento de conceito de jogo",
+        "Testes e ajustes",
+        "Apresentação de projetos",
+        "Integração de múltiplas mecânicas aprendidas anteriormente"
+      ],
+      "proyecto": "Projeto final que atendeu todos os requisitos solicitados e aprendidos durante o curso."
+    }
+  ],
+  "consideraciones": "Durante sua trajetória no Roblox, {alumno} teve contato com importantes conceitos técnicos e criativos, consolidando uma base sólida em desenvolvimento de jogos. As competências trabalhadas ao longo do curso foram:",
+  "competencias": [
+    "Design de jogos",
+    "Modelagem 3D",
+    "Programação em LUA",
+    "Lógica de programação",
+    "Interface de usuário",
+    "Sistemas de economia e monetização",
+    "Desenvolvimento de projetos completos",
+    "Resolução de problemas e pensamento computacional"
+  ],
+  "proximo_paso": {
+    "titulo": "Python 1",
+    "texto": "Considerando o interesse de {alumno} por criação de jogos, o próximo passo recomendado é o Python 1, onde começará a trabalhar com programação em código de forma mais estruturada — criando jogos, aplicações e projetos próprios. Essa etapa desenvolve uma base sólida para áreas futuras como desenvolvimento de software, inteligência artificial e criação de jogos profissionais."
+  }
+}

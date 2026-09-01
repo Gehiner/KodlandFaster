@@ -1,0 +1,115 @@
+{
+  "_ayuda": "Contenido del curso Python Pro (del syllabus oficial). {alumno} se reemplaza por el nombre. Revisa 'proximo_nivel' y 'proximo_paso'.",
+  "curso": "Python Pro",
+  "idioma": "es",
+  "area_interes": "Desarrollo de Software e Inteligencia Artificial",
+  "proximo_nivel": "Proyectos profesionales y portafolio",
+  "vision_general": "A lo largo de Python Pro, {alumno} llevó su programación a un nivel avanzado: creó bots, aplicaciones web con bases de datos, modelos de inteligencia artificial y participó en un hackathon. El gráfico muestra el aprovechamiento registrado en cada módulo, evidenciando las áreas de mayor dominio y las de oportunidad de refuerzo.",
+  "modulos": [
+    {
+      "numero": 1,
+      "titulo": "Bot de Discord y Herramientas Profesionales",
+      "descripcion": "{alumno} configuró un entorno de desarrollo profesional y creó su primer bot de Discord funcional.",
+      "aprendizajes": [
+        "Configuración de un IDE y repaso de sintaxis de Python",
+        "Control de versiones con git y GitHub",
+        "Uso de APIs y la librería discord.py",
+        "Programación orientada a objetos aplicada",
+        "Trabajo con archivos y carpetas",
+        "Pruebas y depuración"
+      ],
+      "proyecto": "Bot de Discord de código abierto"
+    },
+    {
+      "numero": 2,
+      "titulo": "Desarrollo Web con Flask",
+      "descripcion": "{alumno} aprendió desarrollo front-end y back-end, creando páginas web dinámicas con Flask.",
+      "aprendizajes": [
+        "HTML y CSS (estilos avanzados y clases)",
+        "Flask y entornos virtuales",
+        "Plantillas Jinja para páginas dinámicas",
+        "Rutas y formularios",
+        "Bases de datos y autorización de usuarios",
+        "Despliegue del sitio (PythonAnywhere)"
+      ],
+      "proyecto": "Sitio web de portafolio con base de datos"
+    },
+    {
+      "numero": 3,
+      "titulo": "Inteligencia Artificial y Machine Learning",
+      "descripcion": "{alumno} se adentró en la IA: trabajó con datos, entrenó modelos y exploró la visión por computadora.",
+      "aprendizajes": [
+        "Introducción a la IA y el aprendizaje automático",
+        "Google Colab como entorno de desarrollo",
+        "Extracción, limpieza y análisis de datos",
+        "Visualización de datos",
+        "Visión por computadora (Teachable Machine)",
+        "Detección de objetos (ImageAI, YOLO)"
+      ],
+      "proyecto": "Modelo de IA propio para resolver un problema"
+    },
+    {
+      "numero": 4,
+      "titulo": "Integración de IA en Aplicaciones",
+      "descripcion": "{alumno} integró modelos de inteligencia artificial en proyectos ya creados, de forma estable.",
+      "aprendizajes": [
+        "Configuración del entorno del proyecto",
+        "Selección y entrenamiento del modelo adecuado",
+        "Integración de nuevos módulos sin romper el proyecto",
+        "Pruebas y recolección de comentarios"
+      ],
+      "proyecto": "Aplicación con IA integrada (código abierto)"
+    },
+    {
+      "numero": 5,
+      "titulo": "Gestión de Proyectos y Colaboración",
+      "descripcion": "{alumno} aprendió a trabajar en equipo con metodologías y herramientas profesionales.",
+      "aprendizajes": [
+        "Metodologías Agile y Scrum",
+        "Control de versiones en entornos de equipo",
+        "Revisiones de código y buenas prácticas",
+        "Herramientas de colaboración remota"
+      ],
+      "proyecto": "Trabajo en equipo con Agile/Scrum"
+    },
+    {
+      "numero": 6,
+      "titulo": "Voz en Python y Código Limpio",
+      "descripcion": "{alumno} trabajó con síntesis de voz y aprendió a escribir código limpio y mantenible.",
+      "aprendizajes": [
+        "Síntesis de voz en Python",
+        "Bot que anuncia el pronóstico del tiempo",
+        "Bot que cuenta datos interesantes",
+        "Principios de código limpio y refactorización"
+      ],
+      "proyecto": "Bot con síntesis de voz"
+    },
+    {
+      "numero": 7,
+      "titulo": "Hackathon Final",
+      "descripcion": "En la etapa final, {alumno} resolvió de forma autónoma un problema real (el calentamiento global) en un hackathon.",
+      "aprendizajes": [
+        "Análisis, planificación y diseño de la solución",
+        "Desarrollo de la solución",
+        "Pruebas y depuración",
+        "Demostración del proyecto"
+      ],
+      "proyecto": "Solución al calentamiento global (hackathon)"
+    }
+  ],
+  "consideraciones": "Durante Python Pro, {alumno} consolidó un perfil de desarrollador avanzado, capaz de crear software real de principio a fin e incorporar inteligencia artificial. Las competencias trabajadas fueron:",
+  "competencias": [
+    "Control de versiones (git y GitHub)",
+    "Programación orientada a objetos",
+    "APIs y librerías externas",
+    "Desarrollo web con Flask",
+    "Bases de datos",
+    "Inteligencia artificial y machine learning",
+    "Visión por computadora",
+    "Metodologías Agile/Scrum y código limpio"
+  ],
+  "proximo_paso": {
+    "titulo": "Proyectos profesionales y portafolio",
+    "texto": "{alumno} domina un stack completo de desarrollo e inteligencia artificial. El próximo paso recomendado es aplicar estas habilidades en proyectos personales y en la construcción de un portafolio profesional que abra las puertas a áreas como el desarrollo de software, la ciencia de datos o la IA."
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "_ayuda": "Contenido del curso Python 1 (del syllabus oficial). {alumno} se reemplaza por el nombre. Revisa 'proximo_nivel' y 'proximo_paso'.",
+  "curso": "Python 1",
+  "idioma": "es",
+  "area_interes": "Programación y Creación de Videojuegos",
+  "proximo_nivel": "Python Pro",
+  "vision_general": "A lo largo del curso de Python, {alumno} recorrió una jornada de aprendizaje que va desde los fundamentos de la programación hasta la creación de sus propios videojuegos con la librería Pygame Zero. El gráfico muestra el aprovechamiento registrado en cada módulo, evidenciando las áreas de mayor dominio y las de oportunidad de refuerzo.",
+  "modulos": [
+    {
+      "numero": 1,
+      "titulo": "Fundamentos de la Programación",
+      "descripcion": "{alumno} dio sus primeros pasos en Python: conoció qué es programar y escribió sus primeras líneas de código.",
+      "aprendizajes": [
+        "Qué es la programación y el lenguaje Python",
+        "Variables y operadores",
+        "La función input() y los tipos de datos",
+        "Dibujo con el módulo turtle()",
+        "Mostrar información con print()"
+      ],
+      "proyecto": "Tarjeta de empleado: avatar con turtle y ventana de acceso"
+    },
+    {
+      "numero": 2,
+      "titulo": "Lógica: Condicionales",
+      "descripcion": "{alumno} aprendió a controlar el flujo de sus programas con lógica condicional, creando su propio asistente virtual.",
+      "aprendizajes": [
+        "Sentencia condicional if/else",
+        "La palabra clave elif",
+        "Operadores lógicos and / or",
+        "El bucle while y los bucles infinitos",
+        "Comandos personalizados"
+      ],
+      "proyecto": "Asistente virtual con comandos y juego de preguntas"
+    },
+    {
+      "numero": 3,
+      "titulo": "Bucles Avanzados",
+      "descripcion": "{alumno} profundizó en los bucles y conoció las listas, una estructura de datos clave.",
+      "aprendizajes": [
+        "El bucle for y la función range()",
+        "Bucles anidados",
+        "Combinar bucles y condiciones",
+        "Introducción a las listas"
+      ],
+      "proyecto": "Juego de Tres en Raya (o bot de películas y juegos)"
+    },
+    {
+      "numero": 4,
+      "titulo": "Listas y Diccionarios",
+      "descripcion": "{alumno} trabajó con tipos de datos complejos y se introdujo en las funciones.",
+      "aprendizajes": [
+        "Indexación avanzada y borrado en listas",
+        "Diccionarios",
+        "Introducción a las funciones",
+        "Resolución de problemas con datos"
+      ],
+      "proyecto": "Gestor de contraseñas (o tabla de empleados)"
+    },
+    {
+      "numero": 5,
+      "titulo": "Todo sobre Algoritmos",
+      "descripcion": "{alumno} consolidó su base resolviendo problemas con algoritmos.",
+      "aprendizajes": [
+        "Algoritmos lineales",
+        "Algoritmos cíclicos",
+        "Creación correcta de funciones personalizadas",
+        "Práctica con bucles, listas y diccionarios"
+      ],
+      "proyecto": "Retos de programación (competencia)"
+    },
+    {
+      "numero": 6,
+      "titulo": "Introducción a Pygame Zero",
+      "descripcion": "{alumno} creó su primer videojuego con la librería Pygame Zero.",
+      "aprendizajes": [
+        "Funciones principales de Pygame Zero",
+        "Controles de teclado y animaciones",
+        "Cálculo de colisiones (colliderect)",
+        "Salida de texto en pantalla",
+        "Creación de funciones"
+      ],
+      "proyecto": "Mi primer juego en Pygame (publicado en el HUB)"
+    },
+    {
+      "numero": 7,
+      "titulo": "Desarrollo de Juegos en Equipo",
+      "descripcion": "{alumno} trabajó en equipo para crear un juego usando el control del ratón.",
+      "aprendizajes": [
+        "Movimiento y clics del ratón",
+        "Generación de ideas de juego",
+        "Desarrollo según una lista de criterios",
+        "Trabajo colaborativo y depuración de errores"
+      ],
+      "proyecto": "Juego 'clicker' en Pygame (en equipo, publicado)"
+    },
+    {
+      "numero": 8,
+      "titulo": "Juego de Graduación (Roguelike)",
+      "descripcion": "{alumno} desarrolló un juego roguelike, planificando idea, mecánica y gráficos.",
+      "aprendizajes": [
+        "Función collidelist() para varios enemigos",
+        "Diseño y planificación del juego",
+        "Selección de elementos gráficos",
+        "Uso de IA para generar ideas de juego"
+      ],
+      "proyecto": "WeCode y Dragones (juego roguelike)"
+    },
+    {
+      "numero": 9,
+      "titulo": "Pulido y Graduación",
+      "descripcion": "En la etapa final, {alumno} completó y presentó su propio videojuego.",
+      "aprendizajes": [
+        "Desarrollo del proyecto de graduación",
+        "Creación de nuevos niveles y personajes",
+        "Pulido y ajustes finales del juego",
+        "Presentación del proyecto"
+      ],
+      "proyecto": "Juego de graduación propio (presentado)"
+    }
+  ],
+  "consideraciones": "Durante el curso de Python, {alumno} construyó una base sólida en programación, pasando de los fundamentos a crear videojuegos completos. Las competencias trabajadas fueron:",
+  "competencias": [
+    "Variables y tipos de datos",
+    "Lógica condicional (if/elif/else)",
+    "Bucles (for y while)",
+    "Listas y diccionarios",
+    "Funciones",
+    "Algoritmos y resolución de problemas",
+    "Desarrollo de videojuegos con Pygame Zero",
+    "Trabajo en equipo y depuración"
+  ],
+  "proximo_paso": {
+    "titulo": "Python Pro",
+    "texto": "Considerando el avance de {alumno} en la programación con Python, el próximo paso recomendado es Python Pro, donde llevará su lógica a proyectos más ambiciosos y se acercará a áreas como el desarrollo de software y la inteligencia artificial."
+  }
+}
