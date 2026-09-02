@@ -78,10 +78,11 @@ UI = {
 def mensaje_desempeno(promedio, nombre, mods, pcts, ui):
     """Mensaje cálido de felicitación / oportunidad de mejora según el %."""
     n = len(pcts)
-    mejor = mods[max(range(n), key=lambda i: pcts[i])]["titulo"] if n else ""
-    peor_i = min(range(n), key=lambda i: pcts[i]) if n else 0
-    peor = mods[peor_i]["titulo"] if n else ""
-    peor_pct = pcts[peor_i] if n else 0
+    idx = [i for i in range(n) if pcts[i] > 0] or list(range(n))  # solo cursados
+    mejor = mods[max(idx, key=lambda i: pcts[i])]["titulo"] if idx else ""
+    peor_i = min(idx, key=lambda i: pcts[i]) if idx else 0
+    peor = mods[peor_i]["titulo"] if idx else ""
+    peor_pct = pcts[peor_i] if idx else 0
     if promedio >= 85:
         base = (f"¡Felicitaciones, {nombre}! Tu desempeño es excelente: demuestras dominio "
                 f"y constancia a lo largo del curso. Destacas especialmente en «{mejor}». "
@@ -277,8 +278,12 @@ def build_html(curso, alumno):
     mods = mods[:n]
     pcts = [max(0, min(100, int(round(p)))) for p in pcts[:n]]
 
-    promedio = round(sum(pcts) / n) if n else 0
-    mejor_i = max(range(n), key=lambda i: pcts[i]) if n else 0
+    # promedio y mejor módulo SOLO sobre los módulos ya cursados (%>0), para no
+    # penalizar por los módulos que el alumno aún no ha llegado a hacer (que
+    # igual se muestran en el gráfico en 0%).
+    cursados = [i for i in range(n) if pcts[i] > 0] or list(range(n))
+    promedio = round(sum(pcts[i] for i in cursados) / len(cursados)) if cursados else 0
+    mejor_i = max(cursados, key=lambda i: pcts[i]) if cursados else 0
     mejor_pct = pcts[mejor_i] if n else 0
     mejor_mod = mods[mejor_i]["numero"] if n else 0
 
@@ -493,8 +498,9 @@ def pct_por_modulo(progress):
 
     progress: lista de módulos con module_current_grade/module_max_grade (ya
     combinados clase+deberes, como en get_students_main_data.progress_info).
-    Devuelve [% por módulo] TRUNCADO hasta el último módulo con progreso (>0),
-    para no mostrar módulos futuros vacíos en un alumno a mitad de curso.
+    Devuelve [% por módulo] de TODOS los módulos del curso (los que el alumno
+    aún no ha cursado salen en 0%), para mostrar el curso completo —como en el
+    modelo de Kodland— y que siempre aparezcan todos los módulos.
     """
     pares = sorted(
         ((m.get("module_number", i + 1),
@@ -502,13 +508,7 @@ def pct_por_modulo(progress):
           m.get("module_max_grade", 0) or 0)
          for i, m in enumerate(progress or [])),
         key=lambda x: x[0])
-    alcanzado = 0
-    for i, (_mn, cur, _mx) in enumerate(pares):
-        if cur > 0:
-            alcanzado = i + 1
-    if alcanzado == 0:
-        alcanzado = len(pares)  # sin datos: mostrar todo
-    return [round(100 * cur / mx) if mx else 0 for (_mn, cur, mx) in pares[:alcanzado]]
+    return [round(100 * cur / mx) if mx else 0 for (_mn, cur, mx) in pares]
 
 
 def generar(curso, alumno, carpeta_salida):
