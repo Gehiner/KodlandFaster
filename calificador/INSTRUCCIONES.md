@@ -126,6 +126,41 @@ enviarlos. La IA es buena pero no infalible; tú tienes la última palabra.
 
 Flujo recomendado: bat 4 (vista previa) → revisa notas y comentarios → bat 6 (un grupo).
 
+## Reporte de desarrollo por alumno
+
+Doble clic en **`10 - Reportes de desarrollo.bat`**: genera un PDF por alumno inscrito
+del grupo, con el contenido del curso que esté en `reportes/curso_<curso>.json`.
+
+El documento va así:
+
+| Página | Contenido |
+|---|---|
+| 1 | Banner de Kodland, **datos básicos del estudiante**, objetivo del informe y cómo interpretarlo |
+| 2 | Aprovechamiento promedio, visión general y gráfico por módulo |
+| 3 | Calificaciones y asistencia |
+| 4+ | Detalle módulo por módulo (aprendizajes y proyecto) |
+| última | Consideraciones finales, firma del tutor y sello de Kodland |
+
+### Completar los datos básicos
+
+Los diez campos de la primera página (acudiente, e-mail, teléfono, país, código y tipo
+de grupo, día y hora de clase, módulo del informe) se piden al backoffice. Lo que la
+plataforma no devuelva queda con un guion — y para rellenarlo o corregirlo:
+
+1. Copia `reportes/datos.example.json` como **`reportes/datos_<CODIGO_DEL_GRUPO>.json`**
+   (por ejemplo `datos_PRM_COL12429_SA-11.json`).
+2. Pon en `_grupo` lo que es igual para todos y, con el nombre completo de cada alumno
+   como clave, lo que es suyo.
+
+Lo que escribas en ese archivo **manda sobre lo que venga de la API**. No se sube al
+repositorio: lleva datos personales de los alumnos.
+
+> El módulo del informe, si no lo indicas, se toma solo: es el último módulo con avance.
+
+> Tras la primera ejecución queda en `depuracion/campos_caratula_<grupo>.json` la lista
+> de los **nombres** de campo que devolvió la plataforma (sin datos de nadie). Sirve para
+> ajustar de qué campo sale cada dato si la API los llama de otra forma.
+
 ## Si algo falla
 
 - El script guarda capturas de pantalla y HTML en la carpeta `depuracion/` cada vez

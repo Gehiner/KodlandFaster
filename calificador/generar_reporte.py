@@ -17,6 +17,7 @@ Uso:
 """
 
 import argparse
+import base64
 import html as _html
 import json
 import os
@@ -48,6 +49,26 @@ UI = {
         "asis_titulo": "PRESENÇA NAS AULAS", "est_pres": "Presente", "est_aus": "Ausente",
         "est_just": "Justif.", "msg": "MENSAGEM PARA VOCÊ",
         "firma": "ASSINATURA DO PROFESSOR(A)", "sello": "SELO KODLAND",
+        "datos": "DADOS BÁSICOS DO ESTUDANTE",
+        "f_alumno": "Nome do estudante", "f_acu": "Nome do responsável",
+        "f_mail": "E-mail", "f_tel": "Telefone", "f_pais": "País de residência",
+        "f_cod": "Código do grupo", "f_tipo": "Tipo de grupo",
+        "f_dia": "Dia e hora da aula", "f_mod": "Módulo do relatório",
+        "objetivo": "OBJETIVO DO RELATÓRIO",
+        "objetivo_def": ("Apresentar de forma clara o avanço de {alumno} no curso {curso}, "
+                         "descrevendo os aprendizados alcançados em cada módulo, seu nível de "
+                         "aproveitamento e os aspectos a reforçar."),
+        "modo": "COMO INTERPRETAR ESTE RELATÓRIO",
+        "modo_items": (
+            ("Aproveitamento", "porcentagem alcançada em cada módulo sobre a pontuação máxima."),
+            ("Faixas de cor", "Ótimo (≥70%), Bom (50–69%) e Em desenvolvimento (<50%)."),
+            ("Visão geral", "gráfico comparativo com todos os módulos do curso."),
+            ("Notas e presença", "tarefas enviadas, pontos obtidos e presença por módulo."),
+            ("Detalhamento por módulo", "principais aprendizados e projeto desenvolvido."),
+            ("Considerações finais", "avaliação do processo e próximo passo recomendado."),
+        ),
+        "modo_pie": ("No fim do relatório inclui-se uma valoração do processo formativo de "
+                     "{alumno}, destacando aspectos relevantes do seu desempenho."),
     },
     "es": {
         "titulo": "REPORTE DE DESARROLLO",
@@ -71,6 +92,26 @@ UI = {
         "asis_titulo": "ASISTENCIA A CLASES", "est_pres": "Presente", "est_aus": "Ausente",
         "est_just": "Justif.", "msg": "MENSAJE PARA TI",
         "firma": "FIRMA DEL TUTOR(A)", "sello": "SELLO KODLAND",
+        "datos": "DATOS BÁSICOS DEL ESTUDIANTE",
+        "f_alumno": "Nombre del estudiante", "f_acu": "Nombre del acudiente",
+        "f_mail": "E-mail", "f_tel": "Teléfono", "f_pais": "País de residencia",
+        "f_cod": "Código del grupo", "f_tipo": "Tipo de grupo",
+        "f_dia": "Día y hora de clase", "f_mod": "Módulo del informe",
+        "objetivo": "OBJETIVO DEL INFORME",
+        "objetivo_def": ("Presentar de forma clara el avance de {alumno} en el curso {curso}, "
+                         "describiendo los aprendizajes alcanzados en cada módulo, su nivel de "
+                         "aprovechamiento y los aspectos a reforzar."),
+        "modo": "CÓMO INTERPRETAR ESTE INFORME",
+        "modo_items": (
+            ("Aprovechamiento", "porcentaje alcanzado en cada módulo sobre el puntaje máximo."),
+            ("Bandas de color", "Óptimo (≥70%), Bueno (50–69%) y En desarrollo (<50%)."),
+            ("Visión general", "gráfico comparativo con todos los módulos del curso."),
+            ("Calificaciones y asistencia", "tareas enviadas, puntos obtenidos y asistencia por módulo."),
+            ("Detalle por módulo", "principales aprendizajes y proyecto desarrollado."),
+            ("Consideraciones finales", "valoración del proceso y próximo paso recomendado."),
+        ),
+        "modo_pie": ("Al final del informe se incluye una valoración del proceso formativo de "
+                     "{alumno}, destacando aspectos relevantes de su desempeño."),
     },
 }
 
@@ -121,6 +162,16 @@ def sustituir(texto, alumno):
     return (texto or "").replace("{alumno}", alumno)
 
 
+def banner_uri():
+    """Banner de Kodland como data URI (vacio si no esta el archivo)."""
+    ruta = os.path.join(DIR, "reportes", "img", "banner_kodland.png")
+    try:
+        with open(ruta, "rb") as fh:
+            return "data:image/png;base64," + base64.b64encode(fh.read()).decode("ascii")
+    except OSError:
+        return ""
+
+
 ESTILOS = """
 :root{
   --lima:#c8ea4f; --lima-osc:#b6db3f; --oscuro:#1b1b1b; --texto:#2b2b2b;
@@ -169,6 +220,27 @@ h1,h2,h3{font-weight:800;}
   padding:12px 16px; font-size:11.5px; line-height:1.55;}
 .intro b{color:var(--oscuro);}
 
+/* caratula: banner + datos basicos + objetivo + como interpretar */
+.banner{width:100%; display:block; border-radius:16px;}
+.dbasicos{width:100%; border-collapse:collapse; border:1px solid var(--borde);
+  border-radius:12px; overflow:hidden;}
+.dbasicos th{background:var(--card2); color:#6a7358; font-size:9px; letter-spacing:.06em;
+  text-transform:uppercase; text-align:left; padding:9px 10px; width:20%; font-weight:700;
+  border-bottom:1px solid var(--borde); border-right:1px solid var(--borde);}
+.dbasicos td{padding:9px 12px; font-size:11.5px; font-weight:700; color:var(--oscuro);
+  width:30%; border-bottom:1px solid var(--borde); border-right:1px solid var(--borde);
+  background:#fff;}
+.dbasicos td:last-child, .dbasicos th:last-child{border-right:none;}
+.dbasicos tr:last-child th, .dbasicos tr:last-child td{border-bottom:none;}
+.dbasicos td.vacio{color:#b3b9a6; font-weight:600;}
+.modo{background:var(--card); border-left:5px solid var(--lima); border-radius:0 10px 10px 0;
+  padding:12px 16px 12px 20px;}
+.modo ol{margin:0; padding-left:18px;}
+.modo li{font-size:11.5px; line-height:1.6; margin-bottom:2px;}
+.modo li b{color:var(--oscuro);}
+.modo .pie-modo{margin-top:10px; padding-top:9px; border-top:1px dashed #cdd6b8;
+  font-size:11px; line-height:1.5;}
+
 /* gráfico */
 .chart{margin-top:16px; border:1px solid var(--borde); border-radius:12px; padding:16px 14px 8px;}
 .barras{display:flex; align-items:flex-end; gap:10px; height:210px; position:relative;
@@ -190,7 +262,7 @@ h1,h2,h3{font-weight:800;}
 .punto.otimo{background:var(--otimo);} .punto.bom{background:var(--bom);} .punto.dev{background:var(--dev);}
 
 /* módulos */
-.mod{border:1px solid var(--borde); border-radius:14px; padding:16px 18px; margin-bottom:14px;
+.mod{border:1px solid var(--borde); border-radius:14px; padding:11px 15px; margin-bottom:8px;
   page-break-inside:avoid;}
 .mod-cab{display:flex; align-items:center; gap:12px;}
 .badge{width:34px; height:34px; background:var(--oscuro); color:#fff; border-radius:8px;
@@ -206,18 +278,18 @@ h1,h2,h3{font-weight:800;}
 .pill.otimo{background:#e7f6c8; color:#5e7a1a;}
 .pill.bom{background:#fbecc9; color:#8a5e10;}
 .pill.dev{background:#fbd7d7; color:#a23434;}
-.progreso{height:7px; border-radius:5px; background:#eee; margin:12px 0 12px; overflow:hidden;}
+.progreso{height:7px; border-radius:5px; background:#eee; margin:9px 0 9px; overflow:hidden;}
 .progreso i{display:block; height:100%; border-radius:5px;}
 .progreso i.otimo{background:var(--otimo);} .progreso i.bom{background:var(--bom);} .progreso i.dev{background:var(--dev);}
-.mod .desc{font-size:11px; margin-bottom:10px;}
+.mod .desc{font-size:11px; margin-bottom:8px;}
 .mod-cols{display:flex; gap:18px;}
 .mod-cols .izq{flex:1.3;}
 .mod-cols .der{flex:1;}
-.sublbl{font-size:9px; letter-spacing:.08em; font-weight:700; color:#9aa08c; text-transform:uppercase; margin-bottom:6px;}
+.sublbl{font-size:9px; letter-spacing:.08em; font-weight:700; color:#9aa08c; text-transform:uppercase; margin-bottom:5px;}
 .apr{list-style:none;}
-.apr li{font-size:10.5px; padding:3px 0 3px 16px; position:relative;}
+.apr li{font-size:10.5px; padding:2px 0 2px 16px; position:relative;}
 .apr li:before{content:"▸"; position:absolute; left:0; color:var(--lima-osc); font-weight:800;}
-.proy{background:var(--card); border:1px solid var(--borde); border-radius:10px; padding:14px;
+.proy{background:var(--card); border:1px solid var(--borde); border-radius:10px; padding:12px;
   font-weight:800; color:#4d6a12; font-size:12px;}
 
 /* cierre */
@@ -268,7 +340,7 @@ table.calif tr.total td{font-weight:800; background:#fbfdf5; border-top:2px soli
 """
 
 
-def build_html(curso, alumno):
+def build_html(curso, alumno, altos=None):
     idioma = curso.get("idioma", "es")
     ui = UI.get(idioma, UI["es"])
     nombre = alumno["alumno"]
@@ -314,6 +386,47 @@ def build_html(curso, alumno):
     mensaje_html = (f'<div class="mensaje"><div class="k">{ui["msg"]}</div><p>{esc(_msg)}</p></div>'
                     if _msg else "")
 
+    # --- carátula: banner + datos básicos + objetivo + cómo interpretar ---
+    d = alumno.get("datos", {}) or {}
+    mod_inf = d.get("modulo_informe") or (f"M{mods[cursados[-1]]['numero']}" if (n and cursados) else "")
+
+    def celda(v):
+        v = str(v or "").strip()
+        return f"<td>{esc(v)}</td>" if v else '<td class="vacio">—</td>'
+
+    filas_db = (
+        (ui["f_alumno"], nombre,                  ui["f_cod"],   d.get("codigo_grupo", "")),
+        (ui["f_acu"],    d.get("acudiente", ""),  ui["f_tipo"],  d.get("tipo_grupo", "")),
+        (ui["f_mail"],   d.get("email", ""),      ui["f_dia"],   d.get("dia_hora", "")),
+        (ui["f_tel"],    d.get("telefono", ""),   ui["f_mod"],   mod_inf),
+        (ui["f_pais"],   d.get("pais", ""),       ui["curso"],   curso.get("curso", "")),
+    )
+    tabla_db = "".join(f"<tr><th>{esc(a)}</th>{celda(b)}<th>{esc(c)}</th>{celda(e)}</tr>"
+                       for a, b, c, e in filas_db)
+
+    obj = curso.get("objetivo_informe") or ui["objetivo_def"]
+    obj = sustituir(obj, nombre).replace("{curso}", curso.get("curso", ""))
+    items = "".join(f"<li><b>{esc(t)}</b> — {esc(x)}</li>" for t, x in ui["modo_items"])
+    ban = banner_uri()
+
+    caratula = f"""
+<div class="pagina">
+  {f'<img class="banner" src="{ban}">' if ban else ''}
+  <div class="seccion"><div class="cuad"></div><h2>{ui['datos']}</h2></div>
+  <table class="dbasicos">{tabla_db}</table>
+
+  <div class="seccion"><div class="cuad"></div><h2>{ui['objetivo']}</h2></div>
+  <div class="intro">{esc(obj)}</div>
+
+  <div class="seccion"><div class="cuad"></div><h2>{ui['modo']}</h2></div>
+  <div class="modo">
+    <ol>{items}</ol>
+    <div class="pie-modo">{esc(sustituir(ui['modo_pie'], nombre))}</div>
+  </div>
+  <div class="pie-num">Kodland · {ui['titulo'].title()} · {ui['pagina']} 1</div>
+</div>
+"""
+
     # --- portada ---
     barras = ""
     max_alto = 175  # px para 100%
@@ -330,14 +443,9 @@ def build_html(curso, alumno):
 <div class="pagina">
   <div class="cab">
     <div class="logo">kodland</div>
-    <div class="tit"><h1>{ui['titulo']}</h1><p>{ui['lema']}</p></div>
+    <div class="tit"><h1>{ui['titulo']}</h1><p>{esc(nombre)} · {esc(curso['curso'])}</p></div>
   </div>
 
-  <div class="fila">
-    <div class="tarj oscuro"><div class="mut">{ui['aluno']}</div><div class="val">{esc(nombre)}</div></div>
-    <div class="tarj"><div class="mut">{ui['curso']}</div><div class="val">{esc(curso['curso'])}</div></div>
-    <div class="tarj"><div class="mut">{ui['profesor']}</div><div class="val">{esc(alumno.get('profesor',''))}</div></div>
-  </div>
   <div class="fila">
     <div class="tarj"><div class="mut">{ui['area']}</div><div class="val">{esc(curso.get('area_interes',''))}</div></div>
     <div class="tarj"><div class="mut">{ui['proximo']}</div><div class="val">{esc(curso.get('proximo_nivel',''))}</div></div>
@@ -362,7 +470,7 @@ def build_html(curso, alumno):
     </div>
   </div>
   {mensaje_html}
-  <div class="pie-num">Kodland · {ui['titulo'].title()} · {ui['pagina']} 1</div>
+  <div class="pie-num">Kodland · {ui['titulo'].title()} · {ui['pagina']} 2</div>
 </div>
 """
 
@@ -404,10 +512,53 @@ def build_html(curso, alumno):
 
     # --- detalle por módulo (varias páginas: ~3 módulos por página) ---
     paginas_mod = ""
-    por_pagina = 3
+    # Los módulos no miden todos lo mismo (uno con 8 aprendizajes ocupa bastante
+    # más que uno con 5), así que en vez de meter un número fijo por hoja —con 3
+    # fijos, 10 módulos salían 3+3+3+1 y la última quedaba casi vacía— se estima
+    # lo que ocupa cada uno y se llena cada hoja hasta donde de verdad cabe.
+    ALTO_HOJA = 995     # px de contenido por hoja A4 con los márgenes del diseño
+    ALTO_HOJA_1 = 943   # la primera lleva además el título de sección
+
+    def alto_mod(m):
+        """Alto aproximado del bloque, en px (calibrado midiendo el render)."""
+        def lineas(txt, por_linea):
+            return max(1, -(-len(str(txt or "")) // por_linea))
+        return (125
+                + 18 * lineas(m.get("descripcion", ""), 128)
+                + 18 * sum(lineas(a, 46) for a in m.get("aprendizajes", [])))
+
+    medido = bool(altos) and len(altos) >= n
+    altos = list(altos[:n]) if medido else [alto_mod(m) for m in mods]
+    if medido:
+        ALTO_HOJA, ALTO_HOJA_1 = 1005, 953   # sin margen de error que cubrir
+
+    def repartir():
+        """Llena cada hoja hasta donde de verdad cabe."""
+        hojas, act, alto = [], [], 0
+        for i, a in enumerate(altos):
+            tope = ALTO_HOJA_1 if not hojas else ALTO_HOJA
+            if act and alto + a > tope:
+                hojas.append(act)
+                act, alto = [], 0
+            act.append(i)
+            alto += a
+        if act:
+            hojas.append(act)
+        return hojas
+
+    grupos_mod = repartir() if n else []
+    # El reparto ajustado puede dejar la última hoja con uno o dos módulos
+    # sueltos; se le pasan los últimos de la hoja anterior mientras quepan, para
+    # que ninguna quede a medias.
+    for k in range(len(grupos_mod) - 1, 0, -1):
+        while len(grupos_mod[k - 1]) - len(grupos_mod[k]) >= 2:
+            i = grupos_mod[k - 1][-1]
+            if sum(altos[j] for j in grupos_mod[k]) + altos[i] > ALTO_HOJA:
+                break
+            grupos_mod[k].insert(0, grupos_mod[k - 1].pop())
+
     primera = True
-    for inicio in range(0, n, por_pagina):
-        grupo = list(range(inicio, min(inicio + por_pagina, n)))
+    for grupo in grupos_mod:
         cuerpo = ""
         if primera:
             cuerpo += f'<div class="seccion"><div class="cuad"></div><h2>{ui["detalle"]}</h2></div>'
@@ -469,10 +620,24 @@ def build_html(curso, alumno):
 </div>
 """
 
-    return f"<!doctype html><html><head><meta charset='utf-8'><style>{ESTILOS}</style></head><body>{portada}{calif_html}{paginas_mod}{cierre}</body></html>"
+    return f"<!doctype html><html><head><meta charset='utf-8'><style>{ESTILOS}</style></head><body>{caratula}{portada}{calif_html}{paginas_mod}{cierre}</body></html>"
 
 
-def render_pdf(html, salida):
+def altos_medidos(page):
+    """Alto real de cada bloque de módulo en la página ya renderizada.
+
+    Se le suma el margen inferior (8px) porque es espacio que el bloque también
+    ocupa en la hoja. Devuelve None si algo falla, y entonces se estima.
+    """
+    try:
+        altos = page.evaluate("() => [...document.querySelectorAll('.mod')]"
+                              ".map(m => Math.round(m.getBoundingClientRect().height))")
+        return [h + 8 for h in altos] or None
+    except Exception:
+        return None
+
+
+def render_pdf(html, salida, rehacer=None):
     """Convierte el HTML a PDF usando Playwright (Chrome/Edge del sistema)."""
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
@@ -488,6 +653,12 @@ def render_pdf(html, salida):
             raise RuntimeError("No pude abrir Chrome/Edge/Chromium para generar el PDF.")
         page = navegador.new_page()
         page.set_content(html, wait_until="networkidle")
+        if rehacer:
+            # ya renderizado, se sabe lo que ocupa cada módulo: se rehace el
+            # reparto con las medidas exactas para no dejar hojas a medias.
+            html2 = rehacer(altos_medidos(page))
+            if html2:
+                page.set_content(html2, wait_until="networkidle")
         page.pdf(path=salida, format="A4", print_background=True,
                  margin={"top": "0", "bottom": "0", "left": "0", "right": "0"})
         navegador.close()
@@ -517,9 +688,17 @@ def generar(curso, alumno, carpeta_salida):
     html = build_html(curso, alumno)
     ruta_html = os.path.join(carpeta_salida, base + ".html")
     ruta_pdf = os.path.join(carpeta_salida, base + ".pdf")
+    final = {}
+
+    def rehacer(altos):
+        if not altos:
+            return None
+        final["html"] = build_html(curso, alumno, altos)
+        return final["html"]
+
+    render_pdf(html, ruta_pdf, rehacer)
     with open(ruta_html, "w", encoding="utf-8") as fh:
-        fh.write(html)
-    render_pdf(html, ruta_pdf)
+        fh.write(final.get("html", html))
     return ruta_pdf
 
 
@@ -530,20 +709,38 @@ def main():
     ap.add_argument("--profesor", default="")
     ap.add_argument("--pct", default="", help="porcentajes por módulo separados por coma")
     ap.add_argument("--demo", action="store_true", help="genera una muestra con el ejemplo (Roblox)")
+    ap.add_argument("--datos", default="",
+                    help="datos básicos del estudiante: ruta a un .json o el JSON en línea. "
+                         "Claves: acudiente, email, telefono, pais, codigo_grupo, tipo_grupo, "
+                         "dia_hora, modulo_informe")
     ap.add_argument("--salida", default=os.path.join(DIR, "reportes", "salida"))
     args = ap.parse_args()
 
     if args.demo:
         curso = json.load(open(os.path.join(DIR, "reportes", "curso.example.json"), encoding="utf-8"))
         alumno = {"alumno": "Ana Sofía Ejemplo", "profesor": "Prof. Jaime Narváez",
-                  "pct": [65, 45, 85, 100, 65, 40, 39, 67, 98, 100]}
+                  "pct": [65, 45, 85, 100, 65, 40, 39, 67, 98, 100],
+                  "datos": {"acudiente": "María Ejemplo Rojas",
+                            "email": "familia.ejemplo@correo.com",
+                            "telefono": "+57 300 000 0000",
+                            "pais": "Colombia",
+                            "codigo_grupo": "PRM_COL12429_SA-11",
+                            "tipo_grupo": "Grupo regular",
+                            "dia_hora": "Sábado · 11:00–12:30"}}
     else:
         if not args.curso or not args.alumno or not args.pct:
             print("Faltan --curso, --alumno y --pct (o usa --demo).")
             sys.exit(1)
         curso = json.load(open(args.curso, encoding="utf-8"))
+        datos = {}
+        if args.datos:
+            if os.path.isfile(args.datos):
+                datos = json.load(open(args.datos, encoding="utf-8"))
+            else:
+                datos = json.loads(args.datos)
         alumno = {"alumno": args.alumno, "profesor": args.profesor,
-                  "pct": [float(x) for x in args.pct.split(",") if x.strip()]}
+                  "pct": [float(x) for x in args.pct.split(",") if x.strip()],
+                  "datos": datos}
 
     ruta = generar(curso, alumno, args.salida)
     print("Reporte generado:")

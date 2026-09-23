@@ -2651,6 +2651,51 @@ def generar_boletines_grupo(ctx, page, grupo, corte, pw):
     return hechos
 
 
+def _primer_valor(dic, claves, _hondo=0):
+    """Primer valor no vacío entre varias claves candidatas.
+
+    La API no siempre usa el mismo nombre para el mismo dato (y a veces lo
+    anida), así que se prueban varios nombres y se baja un par de niveles.
+    """
+    if not isinstance(dic, dict) or _hondo > 2:
+        return ""
+    for k in claves:
+        v = dic.get(k)
+        if isinstance(v, (str, int, float)) and str(v).strip():
+            return str(v).strip()
+    for v in dic.values():
+        if isinstance(v, dict):
+            r = _primer_valor(v, claves, _hondo + 1)
+            if r:
+                return r
+    return ""
+
+
+def datos_caratula(main, info_grupo, respaldo, nombre, codigo):
+    """Datos básicos del estudiante para la carátula del reporte.
+
+    Se toman del backoffice y se completan con reportes/datos_<codigo>.json,
+    que manda sobre lo que venga de la API (ahí se corrige lo que falte o salga
+    mal). Ese JSON admite una clave "_grupo" con lo común a todo el grupo y una
+    clave por nombre de alumno con lo suyo.
+    """
+    d = {
+        "acudiente": _primer_valor(main, ("parent_name", "parent_full_name",
+                                          "representative_name", "parent")),
+        "email": _primer_valor(main, ("email", "student_email", "parent_email", "login")),
+        "telefono": _primer_valor(main, ("phone", "phone_number", "parent_phone", "telephone")),
+        "pais": _primer_valor(main, ("country", "country_name")),
+        "codigo_grupo": codigo,
+        "tipo_grupo": _primer_valor(info_grupo, ("group_type", "group_type_name", "type")),
+        "dia_hora": _primer_valor(info_grupo, ("schedule", "lesson_time", "group_schedule",
+                                               "day_and_time", "lesson_day")),
+    }
+    manual = dict(respaldo.get("_grupo", {}) or {})
+    manual.update(respaldo.get(nombre, {}) or {})
+    d.update({k: v for k, v in manual.items() if str(v or "").strip()})
+    return d
+
+
 def generar_reportes_grupo(ctx, page, grupo, pw):
     """Genera un 'Reporte de desarrollo' (PDF narrativo por módulo) por cada
     alumno inscrito del grupo, con % reales. Necesita reportes/curso_<slug>.json
@@ -2713,6 +2758,30 @@ def generar_reportes_grupo(ctx, page, grupo, pw):
     salida = DIR_BASE / "reportes" / "salida" / carpeta
     salida.mkdir(parents=True, exist_ok=True)
 
+    # --- datos básicos de la carátula: backoffice + respaldo manual ---
+    respaldo = {}
+    ruta_resp = DIR_BASE / "reportes" / f"datos_{codigo}.json"
+    if ruta_resp.exists():
+        try:
+            respaldo = json.loads(ruta_resp.read_text(encoding="utf-8"))
+            log(f"   carátula: completando con {ruta_resp.name}")
+        except Exception as e:
+            log(f"   no pude leer {ruta_resp.name} ({e}); sigo sin él")
+    rg, _ = api_llamar_multi(paginas, f"/student_groups/{gid}/get_general_info_for_group_backoffice_page")
+    info_grupo = rg.get("cuerpo") if rg.get("status") == 200 else None
+    if not isinstance(info_grupo, dict):
+        info_grupo = {}
+    # radiografía: solo los NOMBRES de los campos (no los datos de los alumnos),
+    # para saber cómo se llaman de verdad y afinar datos_caratula sin adivinar.
+    try:
+        DIR_DEBUG.mkdir(parents=True, exist_ok=True)
+        (DIR_DEBUG / f"campos_caratula_{codigo}.json").write_text(json.dumps(
+            {"main_info": sorted((alumnos[0].get("main_info") or {}).keys()) if alumnos else [],
+             "info_grupo": sorted(info_grupo.keys())},
+            indent=2, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
+
     nav = None
     for canal in ("chrome", "msedge", None):
         try:
@@ -2761,10 +2830,15 @@ def generar_reportes_grupo(ctx, page, grupo, pw):
             asis = {"asistidas": sum(1 for x in ses if x["estado"] == "presente"),
                     "total": len(ses), "sesiones": ses}
             alumno = {"alumno": nombre, "profesor": prof, "pct": pct,
-                      "puntos": puntos, "tareas": tareas, "asistencia": asis}
+                      "puntos": puntos, "tareas": tareas, "asistencia": asis,
+                      "datos": datos_caratula(main, info_grupo, respaldo, nombre, codigo)}
             html = grep.build_html(curso, alumno)
             base = "".join(ch for ch in nombre if ch.isalnum() or ch in " _-").strip() or "alumno"
             rpage.set_content(html, wait_until="networkidle")
+            # ya renderizado se sabe lo que ocupa cada módulo: se rehace el
+            # reparto con las medidas exactas para no dejar hojas a medias
+            rpage.set_content(grep.build_html(curso, alumno, grep.altos_medidos(rpage)),
+                              wait_until="networkidle")
             rpage.pdf(path=str(salida / (base + ".pdf")), format="A4",
                       print_background=True,
                       margin={"top": "0", "bottom": "0", "left": "0", "right": "0"})

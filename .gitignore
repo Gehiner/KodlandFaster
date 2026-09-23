@@ -7,6 +7,8 @@ calificador/ia_config.json
 calificador/depuracion/
 calificador/registros/
 calificador/reportes/salida/
+# Datos personales de alumnos para la caratula del reporte (el .example si se sube)
+calificador/reportes/datos_*.json
 
 # Puente (Native Messaging): el manifest generado tiene rutas de tu máquina
 # y el ID de tu extensión; el log es local. Se suben solo los .example y scripts.

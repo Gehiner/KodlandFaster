@@ -1,0 +1,14 @@
+{
+  "_ayuda": "Copia este archivo como 'datos_<CODIGO_DEL_GRUPO>.json' (por ejemplo datos_PRM_COL12429_SA-11.json) para completar la carátula del reporte. Lo que pongas aquí manda sobre lo que devuelva el backoffice, así que sirve tanto para rellenar lo que falte como para corregir lo que salga mal. Este archivo NO se sube al repositorio: contiene datos personales de los alumnos.",
+  "_grupo": {
+    "tipo_grupo": "Grupo regular",
+    "dia_hora": "Sábado · 11:00–12:30"
+  },
+  "Nombre Completo Del Alumno": {
+    "acudiente": "Nombre del acudiente",
+    "email": "correo@ejemplo.com",
+    "telefono": "+57 300 000 0000",
+    "pais": "Colombia",
+    "modulo_informe": "M7"
+  }
+}
