@@ -3462,6 +3462,51 @@ function reportTaskCounts(data) {
   }, { sent: 0, total: 0 });
 }
 
+function resolveReportGroupCode(groupInfo, groupId) {
+  const candidates = [
+    groupInfo?.group_code,
+    groupInfo?.code,
+    groupInfo?.group?.code,
+    groupInfo?.student_group?.code,
+    document.title,
+    document.querySelector('main h1')?.textContent,
+    document.querySelector('[class*="group-code"], [data-group-code]')?.textContent
+  ];
+  for (const value of candidates) {
+    const match = String(value || '').match(/[A-Z0-9]+(?:_[A-Z0-9-]+)+/i);
+    if (match) return match[0].trim();
+  }
+  return String(groupInfo?.id || groupId || '');
+}
+
+async function loadManualReportData(groupCode, studentName) {
+  if (!groupCode || /^\d+$/.test(groupCode)) return {};
+  const safeCode = groupCode.replace(/[^A-Za-z0-9_-]/g, '_');
+  try {
+    const response = await fetch(chrome.runtime.getURL(`calificador/reportes/datos_${safeCode}.json`));
+    if (!response.ok) return {};
+    const saved = await response.json();
+    return Object.assign({}, saved._grupo || {}, saved[studentName] || {});
+  } catch (error) {
+    return {};
+  }
+}
+
+function firstReportValue(source, keys) {
+  if (!source || typeof source !== 'object') return '';
+  for (const key of keys) {
+    const value = source[key];
+    if (['string', 'number'].includes(typeof value) && String(value).trim()) return String(value).trim();
+  }
+  for (const value of Object.values(source)) {
+    if (value && typeof value === 'object') {
+      const found = firstReportValue(value, keys);
+      if (found) return found;
+    }
+  }
+  return '';
+}
+
 async function loadStudentReportData(studentId, studentData, parentPhone) {
   const groupId = extractGroupId();
   if (!groupId) throw new Error('No pude identificar el grupo actual.');
@@ -3493,6 +3538,9 @@ async function loadStudentReportData(studentId, studentData, parentPhone) {
   const courseTitle = groupInfo?.course?.title || findCourseName();
   if (!courseTitle) throw new Error('No pude identificar el curso de este grupo.');
   const course = await globalThis.KodlandReportGenerator.loadCourse(courseTitle);
+  const studentName = record.main_info?.full_name || extractStudentName(document.querySelector(`a[href="/students/${studentId}"]`)?.parentElement || document);
+  const groupCode = resolveReportGroupCode(groupInfo, groupId);
+  const manualData = await loadManualReportData(groupCode, studentName);
   const visibleModuleNumbers = new Set(lessonsToReport.map(lesson => lesson.moduleNumber));
   const reportModules = course.modulos
     .filter(module => visibleModuleNumbers.has(Number(module.numero)))
@@ -3524,6 +3572,11 @@ async function loadStudentReportData(studentId, studentData, parentPhone) {
       const counts = tasksByLesson.get(String(lesson.lesson_id)) || { sent: 0, total: 0 };
       return { sent: total.sent + counts.sent, total: total.total + counts.total };
     }, { sent: 0, total: 0 });
+    const moduleSessions = lessons.flatMap(lesson => {
+      const states = { 2: ['present', 'Presente'], 1: ['justified', 'Justificada'], 0: ['absent', 'Ausente'] };
+      const state = states[lesson.attendance_status];
+      return state ? [{ label: `M${lesson.moduleNumber} L${lesson.lessonNumber}`, status: state[0], text: state[1] }] : [];
+    });
     return {
       ...module,
       pct: apiModule.module_max_grade
@@ -3532,7 +3585,12 @@ async function loadStudentReportData(studentId, studentData, parentPhone) {
       points: Number(apiModule.module_current_grade) || 0,
       maxPoints: Number(apiModule.module_max_grade) || 0,
       tasksSent: taskCounts.sent,
-      tasksTotal: taskCounts.total
+      tasksTotal: taskCounts.total,
+      attendance: {
+        attended: moduleSessions.filter(session => session.status === 'present').length,
+        total: moduleSessions.length,
+        sessions: moduleSessions
+      }
     };
   });
 
@@ -3542,9 +3600,9 @@ async function loadStudentReportData(studentId, studentData, parentPhone) {
     return state ? [{ label: `M${lesson.moduleNumber} L${lesson.lessonNumber}`, status: state[0], text: state[1] }] : [];
   });
   const report = {
-    studentName: record.main_info?.full_name || extractStudentName(document.querySelector(`a[href="/students/${studentId}"]`)?.parentElement || document),
+    studentName,
     teacher: groupInfo?.group_teacher?.full_name || '',
-    groupCode: groupInfo?.code || groupId,
+    groupCode,
     modules: reportModuleData,
     tasksSent: reportModuleData.reduce((sum, module) => sum + module.tasksSent, 0),
     tasksTotal: reportModuleData.reduce((sum, module) => sum + module.tasksTotal, 0),
@@ -3553,12 +3611,16 @@ async function loadStudentReportData(studentId, studentData, parentPhone) {
       total: sessions.length,
       sessions
     },
-    whatsappPhone: formatPhoneForWhatsApp(parentPhone),
+    whatsappPhone: formatPhoneForWhatsApp(manualData.telefono || parentPhone),
     data: {
-      acudiente: studentData.parent_name || studentData.parent?.name || studentData.parent_name_full || '',
-      email: studentData.email || studentData.student_email || '',
-      telefono: studentData.parent_phone || studentData.parent?.phone || studentData.parent_phone_number || '',
-      pais: studentData.country || studentData.country_name || ''
+      acudiente: manualData.acudiente || firstReportValue(studentData, ['parent_name', 'parent_full_name', 'representative_name', 'parent']),
+      email: manualData.email || firstReportValue(studentData, ['email', 'student_email', 'parent_email', 'login']),
+      telefono: manualData.telefono || firstReportValue(studentData, ['phone', 'phone_number', 'parent_phone', 'telephone']),
+      pais: manualData.pais || firstReportValue(studentData, ['country', 'country_name']),
+      codigo_grupo: manualData.codigo_grupo || groupCode,
+      tipo_grupo: manualData.tipo_grupo || firstReportValue(groupInfo, ['group_type', 'group_type_name', 'type']),
+      dia_hora: manualData.dia_hora || firstReportValue(groupInfo, ['schedule', 'lesson_time', 'group_schedule', 'day_and_time', 'lesson_day']),
+      modulo_informe: manualData.modulo_informe || `M${reportModules.at(-1)?.numero || ''}`
     },
     bannerUrl: chrome.runtime.getURL('calificador/reportes/img/banner_kodland.png'),
     includeDetails: true
@@ -3659,7 +3721,7 @@ function showStudentReportModal(studentId, studentData, parentPhone) {
     moduleSelect.innerHTML = data.report.modules.map(module =>
       `<option value="${Number(module.numero)}">M${Number(module.numero)} · ${escapeHtml(module.titulo)}</option>`
     ).join('');
-    status.textContent = `${data.report.modules.length} módulo(s) disponible(s) hasta la fecha.${data.report.whatsappPhone ? '' : ' No encontré un teléfono propio del alumno; el PDF se podrá descargar, pero no abriré el WhatsApp del acudiente.'}`;
+    status.textContent = `${data.report.modules.length} módulo(s) disponible(s) hasta la fecha.${data.report.whatsappPhone ? '' : ' No hay teléfono de acudiente disponible; el PDF se podrá descargar sin abrir WhatsApp.'}`;
     controls.hidden = false;
     generalButton.disabled = false;
     moduleSelect.disabled = false;

@@ -56,6 +56,7 @@
     {
       "resources": [
         "calificador/reportes/curso_*.json",
+        "calificador/reportes/datos_*.json",
         "calificador/reportes/img/banner_kodland.png"
       ],
       "matches": ["https://bo.kodland.org/*"]
