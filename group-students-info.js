@@ -3759,7 +3759,17 @@ function showStudentReportModal(studentId, studentData, parentPhone) {
       const scope = selectedModule == null ? 'general' : `del módulo ${selectedModule}`;
       status.textContent = `Python inició el reporte ${scope} en una ventana nueva. El PDF se abrirá al terminar.${phone ? ' Ya abrí WhatsApp; adjunta el PDF cuando aparezca y pulsa Enviar.' : ''}`;
       if (whatsappWindow && !whatsappWindow.closed) {
-        const message = `Hola ${reportData.report.studentName}, te comparto tu reporte ${scope} del curso ${reportData.course.curso}.`;
+        const settings = getExtensionSettings();
+        const selected = selectedModule == null
+          ? null
+          : reportData.report.modules.find(module => Number(module.numero) === Number(selectedModule));
+        const message = renderTemplate(settings.pdfReportTemplate || DEFAULT_PDF_REPORT_TEMPLATE, {
+          studentName: reportData.report.studentName,
+          tutorName: settings.tutorName,
+          courseName: reportData.course.curso,
+          reportType: selectedModule == null ? 'general' : 'por módulo',
+          moduleName: selected ? ` · M${selected.numero}: ${selected.titulo}` : ''
+        });
         whatsappWindow.location.href = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
       }
     } catch (error) {
@@ -4782,6 +4792,11 @@ Les comparto la grabación de nuestra última clase de {{courseName}}, por si qu
 Cualquier duda, aquí estoy para ayudarles. ¡Sigamos aprendiendo! 🚀
 {{tutorName}}`;
 
+const DEFAULT_PDF_REPORT_TEMPLATE = `Hola {{studentName}} 👋
+Te comparto el reporte {{reportType}} de {{courseName}}{{moduleName}}.
+Si tienes alguna duda sobre tu avance, escríbeme y con gusto lo revisamos.
+{{tutorName}}`;
+
 // Fill in a template string, replacing {{placeholder}} tokens with values
 // from `vars`. Unknown placeholders are left as-is (so a typo doesn't
 // silently delete text).
@@ -4809,7 +4824,8 @@ const DEFAULT_KODLAND_SETTINGS = {
   groupWelcomeTemplate: DEFAULT_GROUP_WELCOME_TEMPLATE,
   firstClassTemplate: DEFAULT_FIRST_CLASS_TEMPLATE,
   recordingStudentTemplate: DEFAULT_RECORDING_STUDENT_TEMPLATE,
-  recordingGroupTemplate: DEFAULT_RECORDING_GROUP_TEMPLATE
+  recordingGroupTemplate: DEFAULT_RECORDING_GROUP_TEMPLATE,
+  pdfReportTemplate: DEFAULT_PDF_REPORT_TEMPLATE
 };
 
 function getExtensionSettings() {
@@ -4973,6 +4989,17 @@ function openSettingsModal() {
         <textarea id="kodland-setting-recording-group-template" rows="6"
           style="width:100%; box-sizing:border-box; padding:8px; border-radius:6px; border:1px solid #444; background:#1e1e1e; color:#fff; margin-bottom:20px; font-family:monospace; font-size:12px;">${escapeHtml(settings.recordingGroupTemplate)}</textarea>
 
+        <p style="font-size:12px; color:#999; margin-bottom:8px;">
+          Para el mensaje del reporte PDF puedes usar <code>{{studentName}}</code>, <code>{{tutorName}}</code>,
+          <code>{{courseName}}</code>, <code>{{reportType}}</code> y <code>{{moduleName}}</code>.
+        </p>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <label style="font-size:13px; color:#bbb;">📄 Mensaje al compartir el reporte PDF:</label>
+          <button id="kodland-reset-pdf-report" type="button" style="background:none; border:none; color:#25D366; font-size:12px; cursor:pointer; text-decoration:underline;">Restablecer</button>
+        </div>
+        <textarea id="kodland-setting-pdf-report-template" rows="5"
+          style="width:100%; box-sizing:border-box; padding:8px; border-radius:6px; border:1px solid #444; background:#1e1e1e; color:#fff; margin-bottom:20px; font-family:monospace; font-size:12px;">${escapeHtml(settings.pdfReportTemplate)}</textarea>
+
         <button id="kodland-settings-save" class="kodland-wa-btn" style="width:100%; justify-content:center;">Guardar</button>
       </div>
     </div>
@@ -5012,6 +5039,9 @@ function openSettingsModal() {
   modal.querySelector('#kodland-reset-recording-group').addEventListener('click', () => {
     modal.querySelector('#kodland-setting-recording-group-template').value = DEFAULT_RECORDING_GROUP_TEMPLATE;
   });
+  modal.querySelector('#kodland-reset-pdf-report').addEventListener('click', () => {
+    modal.querySelector('#kodland-setting-pdf-report-template').value = DEFAULT_PDF_REPORT_TEMPLATE;
+  });
 
   modal.querySelector('#kodland-settings-save').addEventListener('click', () => {
     const newSettings = {
@@ -5031,7 +5061,8 @@ function openSettingsModal() {
       groupWelcomeTemplate: modal.querySelector('#kodland-setting-groupwelcome-template').value.trim() || DEFAULT_GROUP_WELCOME_TEMPLATE,
       firstClassTemplate: modal.querySelector('#kodland-setting-firstclass-template').value.trim() || DEFAULT_FIRST_CLASS_TEMPLATE,
       recordingStudentTemplate: modal.querySelector('#kodland-setting-recording-student-template').value.trim() || DEFAULT_RECORDING_STUDENT_TEMPLATE,
-      recordingGroupTemplate: modal.querySelector('#kodland-setting-recording-group-template').value.trim() || DEFAULT_RECORDING_GROUP_TEMPLATE
+      recordingGroupTemplate: modal.querySelector('#kodland-setting-recording-group-template').value.trim() || DEFAULT_RECORDING_GROUP_TEMPLATE,
+      pdfReportTemplate: modal.querySelector('#kodland-setting-pdf-report-template').value.trim() || DEFAULT_PDF_REPORT_TEMPLATE
     };
     saveExtensionSettings(newSettings);
     modal.remove();
