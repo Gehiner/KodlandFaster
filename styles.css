@@ -530,8 +530,8 @@
   gap: 10px;
 }
 
-.kodland-report-general,
-.kodland-report-module-button {
+.kodland-report-python-general,
+.kodland-report-python-module {
   min-height: 38px;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -541,28 +541,22 @@
   cursor: pointer;
 }
 
-.kodland-report-general {
+.kodland-report-python-general,
+.kodland-report-python-module {
   border-color: #a7c93d;
   background: linear-gradient(145deg, #e2fa8a, #b9df45);
   color: #263414;
   box-shadow: 0 2px 6px rgba(116, 148, 34, 0.2);
 }
 
-.kodland-report-module-button {
-  border-color: #137e67;
-  background: linear-gradient(145deg, #20a887, #137e67);
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(19, 126, 103, 0.2);
-}
-
-.kodland-report-general:hover:not(:disabled),
-.kodland-report-module-button:hover:not(:disabled) {
+.kodland-report-python-general:hover:not(:disabled),
+.kodland-report-python-module:hover:not(:disabled) {
   filter: brightness(0.96);
   box-shadow: 0 3px 9px rgba(19, 126, 103, 0.28);
 }
 
-.kodland-report-general:disabled,
-.kodland-report-module-button:disabled,
+.kodland-report-python-general:disabled,
+.kodland-report-python-module:disabled,
 .kodland-report-module-row select:disabled {
   opacity: 0.55;
   cursor: wait;

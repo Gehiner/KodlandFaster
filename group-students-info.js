@@ -3428,6 +3428,38 @@ function injectGroupGradingReportButton() {
 }
 
 const groupReportProgressCache = new Map();
+const REPORT_COURSE_FILES = [
+  'curso_creatividad.json', 'curso_creatividad_2.json', 'curso_drawing.json',
+  'curso_funtech.json', 'curso_fwd_pro.json', 'curso_graphic_design.json',
+  'curso_illustration.json', 'curso_minecraft.json', 'curso_minecraft_2.json',
+  'curso_python.json', 'curso_python_pro.json', 'curso_roblox.json',
+  'curso_roblox_2.json', 'curso_scratch.json', 'curso_unity.json', 'curso_web.json'
+];
+
+async function loadReportCourse(courseTitle) {
+  const normalize = value => String(value || '').toLowerCase()
+    .replace(/([a-z])(\d)/g, '$1 $2').replace(/(\d)([a-z])/g, '$1 $2')
+    .split(/[^a-z0-9]+/).filter(Boolean);
+  const titleWords = new Set(normalize(courseTitle));
+  const words = [...titleWords];
+  const levelIndex = words.findIndex(word => word === 'lvl' || word === 'level');
+  const level = levelIndex >= 0 ? words[levelIndex + 1] : null;
+  const alias = titleWords.has('digital') && titleWords.has('creativity')
+    ? ({ '1': 'curso_creatividad.json', '2': 'curso_creatividad_2.json' })[level]
+    : null;
+  const matches = REPORT_COURSE_FILES.map(file => ({
+    file,
+    words: normalize(file.replace(/^curso_|\.json$/g, '').replace(/_/g, ' '))
+  })).filter(item => item.words.length && item.words.every(word => titleWords.has(word)))
+    .sort((left, right) => right.words.length - left.words.length);
+  const file = alias || matches[0]?.file;
+  if (!file) throw new Error(`No encontré una plantilla para el curso «${courseTitle}».`);
+  const response = await fetch(chrome.runtime.getURL(`calificador/reportes/${file}`));
+  if (!response.ok) throw new Error(`No se pudo cargar la plantilla ${file}.`);
+  const course = await response.json();
+  course._template_file = file;
+  return course;
+}
 
 async function fetchGroupReportProgress(groupId) {
   const cached = groupReportProgressCache.get(groupId);
@@ -3537,7 +3569,7 @@ async function loadStudentReportData(studentId, studentData, parentPhone) {
 
   const courseTitle = groupInfo?.course?.title || findCourseName();
   if (!courseTitle) throw new Error('No pude identificar el curso de este grupo.');
-  const course = await globalThis.KodlandReportGenerator.loadCourse(courseTitle);
+  const course = await loadReportCourse(courseTitle);
   const studentName = record.main_info?.full_name || extractStudentName(document.querySelector(`a[href="/students/${studentId}"]`)?.parentElement || document);
   const groupCode = resolveReportGroupCode(groupInfo, groupId);
   const manualData = await loadManualReportData(groupCode, studentName);
@@ -3657,11 +3689,11 @@ function showStudentReportModal(studentId, studentData, parentPhone) {
       <div class="kodland-modal-body">
         <p class="kodland-report-status">Consultando el curso y las lecciones realizadas…</p>
         <div class="kodland-report-controls" hidden>
-          <button class="kodland-report-general" type="button" disabled>Generar reporte general</button>
+          <button class="kodland-report-python-general" type="button" disabled>Generar reporte general</button>
           <label class="kodland-report-module-label" for="kodland-report-module">Módulo</label>
           <div class="kodland-report-module-row">
             <select id="kodland-report-module" disabled></select>
-            <button class="kodland-report-module-button" type="button" disabled>Generar reporte por módulo</button>
+            <button class="kodland-report-python-module" type="button" disabled>Generar reporte por módulo</button>
           </div>
         </div>
       </div>
@@ -3681,39 +3713,65 @@ function showStudentReportModal(studentId, studentData, parentPhone) {
 
   const status = modal.querySelector('.kodland-report-status');
   const controls = modal.querySelector('.kodland-report-controls');
-  const generalButton = modal.querySelector('.kodland-report-general');
+  const pythonGeneralButton = modal.querySelector('.kodland-report-python-general');
   const moduleSelect = modal.querySelector('#kodland-report-module');
-  const moduleButton = modal.querySelector('.kodland-report-module-button');
+  const pythonModuleButton = modal.querySelector('.kodland-report-python-module');
 
-  const generate = async (selectedModule, button) => {
-    const whatsappPhone = modal.reportData?.report.whatsappPhone;
-    const whatsappWindow = whatsappPhone ? window.open('about:blank', '_blank') : null;
-    button.disabled = true;
-    generalButton.disabled = true;
-    moduleButton.disabled = true;
-    status.textContent = 'Generando y descargando el PDF…';
+  const generateWithPython = async selectedModule => {
+    const reportData = modal.reportData;
+    const phone = reportData?.report.whatsappPhone;
+    const whatsappWindow = phone ? window.open('about:blank', '_blank') : null;
+    [pythonGeneralButton, pythonModuleButton].forEach(button => { button.disabled = true; });
+    status.textContent = 'Python está generando el PDF…';
+
+    const modules = selectedModule == null
+      ? reportData.report.modules
+      : reportData.report.modules.filter(module => Number(module.numero) === Number(selectedModule));
+    const payload = {
+      course_file: reportData.course._template_file,
+      module_number: selectedModule == null ? null : Number(selectedModule),
+      student: {
+        alumno: reportData.report.studentName,
+        profesor: reportData.report.teacher,
+        modules: modules.map(module => ({
+          numero: module.numero,
+          pct: module.pct,
+          points: module.points,
+          maxPoints: module.maxPoints,
+          tasksSent: module.tasksSent,
+          tasksTotal: module.tasksTotal,
+          attendance: module.attendance
+        })),
+        attendance: reportData.report.attendance,
+        datos: reportData.report.data
+      }
+    };
+
     try {
-      const filename = await globalThis.KodlandReportGenerator.download(
-        modal.reportData.course,
-        modal.reportData.report,
-        selectedModule
-      );
-      status.textContent = `Descargado: ${filename}. ${whatsappPhone ? 'Se abrió el WhatsApp del acudiente. Adjunta el PDF y pulsa Enviar.' : 'No hay teléfono de acudiente disponible para abrir WhatsApp.'}`;
+      const response = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ tipo: 'calificador', action: 'generar_reporte_python', payload }, result => {
+          if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+          else resolve(result);
+        });
+      });
+      if (!response?.ok) throw new Error(response?.error || 'El puente Python no pudo generar el reporte.');
+
+      const scope = selectedModule == null ? 'general' : `del módulo ${selectedModule}`;
+      status.textContent = `Python inició el reporte ${scope} en una ventana nueva. El PDF se abrirá al terminar.${phone ? ' Ya abrí WhatsApp; adjunta el PDF cuando aparezca y pulsa Enviar.' : ''}`;
       if (whatsappWindow && !whatsappWindow.closed) {
-        const scope = selectedModule ? `del módulo ${selectedModule}` : 'general';
-        const message = `Hola ${modal.reportData.report.studentName}, te comparto tu reporte ${scope} del curso ${modal.reportData.course.curso}.`;
-        whatsappWindow.location.href = `https://api.whatsapp.com/send?phone=${whatsappPhone}&text=${encodeURIComponent(message)}`;
+        const message = `Hola ${reportData.report.studentName}, te comparto tu reporte ${scope} del curso ${reportData.course.curso}.`;
+        whatsappWindow.location.href = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
       }
     } catch (error) {
       whatsappWindow?.close();
-      status.textContent = error.message || 'No se pudo generar el PDF.';
-      generalButton.disabled = false;
-      moduleButton.disabled = false;
+      status.textContent = error.message || 'No se pudo generar el reporte con Python.';
+    } finally {
+      [pythonGeneralButton, pythonModuleButton].forEach(button => { button.disabled = false; });
     }
   };
 
-  generalButton.addEventListener('click', () => generate(null, generalButton));
-  moduleButton.addEventListener('click', () => generate(Number(moduleSelect.value), moduleButton));
+  pythonGeneralButton.addEventListener('click', () => generateWithPython(null));
+  pythonModuleButton.addEventListener('click', () => generateWithPython(Number(moduleSelect.value)));
 
   loadStudentReportData(studentId, studentData, parentPhone).then(data => {
     if (!document.body.contains(modal)) return;
@@ -3723,9 +3781,9 @@ function showStudentReportModal(studentId, studentData, parentPhone) {
     ).join('');
     status.textContent = `${data.report.modules.length} módulo(s) disponible(s) hasta la fecha.${data.report.whatsappPhone ? '' : ' No hay teléfono de acudiente disponible; el PDF se podrá descargar sin abrir WhatsApp.'}`;
     controls.hidden = false;
-    generalButton.disabled = false;
+    pythonGeneralButton.disabled = false;
     moduleSelect.disabled = false;
-    moduleButton.disabled = false;
+    pythonModuleButton.disabled = false;
   }).catch(error => {
     status.textContent = error.message || 'No se pudieron cargar los datos del reporte.';
   });

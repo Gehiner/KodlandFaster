@@ -27,7 +27,7 @@
     },
     {
       "matches": ["https://bo.kodland.org/*"],
-      "js": ["open-wa-button.js", "send-credential-button.js", "send-me-credential-button.js", "node_modules/jspdf/dist/jspdf.umd.min.js", "node_modules/html2pdf.js/dist/html2pdf.bundle.min.js", "report-generator.js", "group-students-info.js", "calificador-buttons.js", "content.js"],
+      "js": ["open-wa-button.js", "send-credential-button.js", "send-me-credential-button.js", "group-students-info.js", "calificador-buttons.js", "content.js"],
       "css": ["styles.css"],
       "run_at": "document_idle"
     },

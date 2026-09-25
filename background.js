@@ -46,7 +46,17 @@ const NOMBRE_PUENTE = 'com.kodland.puente';
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg || msg.tipo !== 'calificador') return;  // no es para nosotros
   try {
-    chrome.runtime.sendNativeMessage(NOMBRE_PUENTE, { action: msg.action }, (respuesta) => {
+    const nativeMessage = { action: msg.action };
+    if (msg.action === 'generar_reporte_python') {
+      const senderUrl = new URL(sender.url || '');
+      if (senderUrl.origin !== 'https://bo.kodland.org' || !senderUrl.pathname.startsWith('/groups/')) {
+        sendResponse({ ok: false, error: 'El reporte Python solo se puede solicitar desde un grupo de Kodland.' });
+        return false;
+      }
+      nativeMessage.payload = msg.payload;
+    }
+
+    chrome.runtime.sendNativeMessage(NOMBRE_PUENTE, nativeMessage, (respuesta) => {
       if (chrome.runtime.lastError) {
         sendResponse({ ok: false, error: chrome.runtime.lastError.message });
       } else {
