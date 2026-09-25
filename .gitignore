@@ -22,6 +22,9 @@ __pycache__/
 .venv/
 venv/
 
+# Dependencias locales de la extensión
+node_modules/
+
 # Sistema operativo
 Thumbs.db
 .DS_Store

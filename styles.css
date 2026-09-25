@@ -302,6 +302,21 @@
   flex-shrink: 0;
 }
 
+.kodland-student-buttons .kodland-report-btn {
+  width: 32px;
+  border: 1px solid #a7c93d;
+  background: linear-gradient(145deg, #e2fa8a, #b9df45);
+  color: #263414;
+  font-size: 9px;
+  font-weight: 800;
+  box-shadow: 0 1px 4px rgba(116, 148, 34, 0.28);
+}
+
+.kodland-student-buttons .kodland-report-btn:hover {
+  background: linear-gradient(145deg, #d8f36d, #a9d532);
+  box-shadow: 0 2px 8px rgba(116, 148, 34, 0.38);
+}
+
 /* Tooltip styles for buttons */
 .kodland-student-buttons button[title] {
   position: relative;
@@ -487,6 +502,100 @@
   padding: 24px;
   overflow-y: auto;
   flex: 1;
+}
+
+#kodland-student-report-modal .kodland-modal-content {
+  max-width: 560px;
+  max-height: 80vh;
+}
+
+#kodland-student-report-modal .kodland-modal-header h2 {
+  font-size: 17px;
+}
+
+.kodland-report-status {
+  min-height: 22px;
+  margin: 0 0 16px;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.kodland-report-controls[hidden] {
+  display: none;
+}
+
+.kodland-report-controls {
+  display: grid;
+  gap: 10px;
+}
+
+.kodland-report-general,
+.kodland-report-module-button {
+  min-height: 38px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kodland-report-general {
+  border-color: #a7c93d;
+  background: linear-gradient(145deg, #e2fa8a, #b9df45);
+  color: #263414;
+  box-shadow: 0 2px 6px rgba(116, 148, 34, 0.2);
+}
+
+.kodland-report-module-button {
+  border-color: #137e67;
+  background: linear-gradient(145deg, #20a887, #137e67);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(19, 126, 103, 0.2);
+}
+
+.kodland-report-general:hover:not(:disabled),
+.kodland-report-module-button:hover:not(:disabled) {
+  filter: brightness(0.96);
+  box-shadow: 0 3px 9px rgba(19, 126, 103, 0.28);
+}
+
+.kodland-report-general:disabled,
+.kodland-report-module-button:disabled,
+.kodland-report-module-row select:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.kodland-report-module-label {
+  margin-top: 8px;
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.kodland-report-module-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.kodland-report-module-row select {
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 7px 9px;
+  background: #fff;
+  color: #1f2937;
+  font-size: 13px;
+}
+
+@media (max-width: 560px) {
+  .kodland-report-module-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .kodland-module-section {

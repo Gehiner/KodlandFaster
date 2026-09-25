@@ -3,10 +3,17 @@
 ## Paso a Paso Detallado
 
 ### Paso 1: Preparar los archivos
+Instala primero la dependencia local que genera los PDF. Necesitas Node.js y npm:
+
+```bat
+npm install
+```
+
 Asegúrate de que todos los archivos estén en la misma carpeta:
 - ✅ `manifest.json`
 - ✅ `content.js`
 - ✅ `styles.css`
+- ✅ `node_modules` (se crea con `npm install`)
 
 ### Paso 2: Abrir Chrome Extensions
 

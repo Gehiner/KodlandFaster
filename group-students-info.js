@@ -3427,6 +3427,248 @@ function injectGroupGradingReportButton() {
   console.log('[Group Students Info] ✅ Botón "Reporte calificación" inyectado');
 }
 
+const groupReportProgressCache = new Map();
+
+async function fetchGroupReportProgress(groupId) {
+  const cached = groupReportProgressCache.get(groupId);
+  if (cached && Date.now() - cached.timestamp < 30000) return cached.data;
+
+  const response = await fetch(
+    `https://backoffice.kodland.org/api/v2/student_groups/${groupId}/get_students_main_data`,
+    {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
+      }
+    }
+  );
+  if (!response.ok) throw new Error(`Kodland respondió ${response.status} al consultar el progreso.`);
+  const data = await response.json();
+  if (!Array.isArray(data)) throw new Error('La respuesta de progreso del grupo no tiene el formato esperado.');
+  groupReportProgressCache.set(groupId, { timestamp: Date.now(), data });
+  return data;
+}
+
+function reportTaskCounts(data) {
+  const tasks = Array.isArray(data) ? data : data?.tasks || data?.data || [];
+  return tasks.reduce((counts, task) => {
+    if (!(Number(task.task_max_grade) > 0) || task.task_status_key === 'TASK_NOT_GRADED') return counts;
+    counts.total += 1;
+    if (task.task_status_key && task.task_status_key !== 'TASK_NOT_SUBMITTED') counts.sent += 1;
+    return counts;
+  }, { sent: 0, total: 0 });
+}
+
+async function loadStudentReportData(studentId, studentData, parentPhone) {
+  const groupId = extractGroupId();
+  if (!groupId) throw new Error('No pude identificar el grupo actual.');
+
+  const [groupInfo, students] = await Promise.all([
+    fetchGroupGeneralInfo(groupId),
+    fetchGroupReportProgress(groupId)
+  ]);
+  const record = students.find(item => String(item.main_info?.student_id) === String(studentId));
+  if (!record) throw new Error('No encontré el progreso de este alumno en el grupo.');
+
+  const progress = Array.isArray(record.progress_info) ? record.progress_info : [];
+  const progressModules = progress;
+  const orderedLessons = progressModules.flatMap((module, moduleIndex) =>
+    (module.lessons_data || []).map((lesson, lessonIndex) => ({
+      ...lesson,
+      moduleNumber: Number(module.module_number) || moduleIndex + 1,
+      lessonNumber: Number(lesson.lesson_number) || lessonIndex + 1
+    }))
+  );
+  const lastLessonId = record.main_info?.last_lesson_id;
+  const lastLessonIndex = lastLessonId == null
+    ? -1
+    : orderedLessons.findIndex(lesson => String(lesson.lesson_id) === String(lastLessonId));
+  const cutoffIndex = lastLessonIndex >= 0 ? lastLessonIndex : orderedLessons.length - 1;
+  const lessonsToReport = orderedLessons.slice(0, cutoffIndex + 1);
+  if (!lessonsToReport.length) throw new Error('El alumno todavía no tiene lecciones realizadas para reportar.');
+
+  const courseTitle = groupInfo?.course?.title || findCourseName();
+  if (!courseTitle) throw new Error('No pude identificar el curso de este grupo.');
+  const course = await globalThis.KodlandReportGenerator.loadCourse(courseTitle);
+  const visibleModuleNumbers = new Set(lessonsToReport.map(lesson => lesson.moduleNumber));
+  const reportModules = course.modulos
+    .filter(module => visibleModuleNumbers.has(Number(module.numero)))
+    .sort((a, b) => Number(a.numero) - Number(b.numero));
+  if (!reportModules.length) throw new Error(`La plantilla «${course.curso}» no coincide con los módulos del progreso.`);
+
+  const tasksByLesson = new Map();
+  for (let index = 0; index < lessonsToReport.length; index += 3) {
+    const batch = lessonsToReport.slice(index, index + 3);
+    const results = await Promise.all(batch.map(async lesson => {
+      const [classTasks, homeworkTasks] = await Promise.all([
+        fetchClassTasksProgress(studentId, lesson.lesson_id),
+        fetchHomeworkTasksProgress(studentId, lesson.lesson_id)
+      ]);
+      return { lessonId: String(lesson.lesson_id), counts: reportTaskCounts([classTasks, homeworkTasks].flatMap(value => Array.isArray(value) ? value : value?.tasks || value?.data || [])) };
+    }));
+    results.forEach(result => tasksByLesson.set(result.lessonId, result.counts));
+  }
+
+  const apiModules = new Map(progressModules.map((module, index) => [
+    Number(module.module_number) || index + 1,
+    module
+  ]));
+  const reportModuleData = reportModules.map(module => {
+    const number = Number(module.numero);
+    const apiModule = apiModules.get(number) || {};
+    const lessons = lessonsToReport.filter(lesson => lesson.moduleNumber === number);
+    const taskCounts = lessons.reduce((total, lesson) => {
+      const counts = tasksByLesson.get(String(lesson.lesson_id)) || { sent: 0, total: 0 };
+      return { sent: total.sent + counts.sent, total: total.total + counts.total };
+    }, { sent: 0, total: 0 });
+    return {
+      ...module,
+      pct: apiModule.module_max_grade
+        ? Math.round(100 * (Number(apiModule.module_current_grade) || 0) / Number(apiModule.module_max_grade))
+        : 0,
+      points: Number(apiModule.module_current_grade) || 0,
+      maxPoints: Number(apiModule.module_max_grade) || 0,
+      tasksSent: taskCounts.sent,
+      tasksTotal: taskCounts.total
+    };
+  });
+
+  const sessions = lessonsToReport.flatMap(lesson => {
+    const states = { 2: ['present', 'Presente'], 1: ['justified', 'Justificada'], 0: ['absent', 'Ausente'] };
+    const state = states[lesson.attendance_status];
+    return state ? [{ label: `M${lesson.moduleNumber} L${lesson.lessonNumber}`, status: state[0], text: state[1] }] : [];
+  });
+  const report = {
+    studentName: record.main_info?.full_name || extractStudentName(document.querySelector(`a[href="/students/${studentId}"]`)?.parentElement || document),
+    teacher: groupInfo?.group_teacher?.full_name || '',
+    groupCode: groupInfo?.code || groupId,
+    modules: reportModuleData,
+    tasksSent: reportModuleData.reduce((sum, module) => sum + module.tasksSent, 0),
+    tasksTotal: reportModuleData.reduce((sum, module) => sum + module.tasksTotal, 0),
+    attendance: {
+      attended: sessions.filter(item => item.status === 'present').length,
+      total: sessions.length,
+      sessions
+    },
+    whatsappPhone: formatPhoneForWhatsApp(parentPhone),
+    data: {
+      acudiente: studentData.parent_name || studentData.parent?.name || studentData.parent_name_full || '',
+      email: studentData.email || studentData.student_email || '',
+      telefono: studentData.parent_phone || studentData.parent?.phone || studentData.parent_phone_number || '',
+      pais: studentData.country || studentData.country_name || ''
+    },
+    bannerUrl: chrome.runtime.getURL('calificador/reportes/img/banner_kodland.png'),
+    includeDetails: true
+  };
+  return { course, report };
+}
+
+function createStudentReportButton(container, studentId, studentData, parentPhone) {
+  const button = document.createElement('button');
+  button.className = 'kodland-wa-btn kodland-report-btn';
+  button.textContent = 'PDF';
+  button.title = 'Generar reporte PDF';
+  button.setAttribute('aria-label', 'Generar reporte PDF');
+  button.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    showStudentReportModal(studentId, studentData, parentPhone);
+  });
+  return button;
+}
+
+function showStudentReportModal(studentId, studentData, parentPhone) {
+  document.getElementById('kodland-student-report-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'kodland-student-report-modal';
+  modal.className = 'kodland-modal';
+  modal.innerHTML = `
+    <div class="kodland-modal-content kodland-report-modal-content">
+      <div class="kodland-modal-header">
+        <h2>Reporte PDF · ${escapeHtml(extractStudentName(document.querySelector(`a[href="/students/${studentId}"]`)?.parentElement || document))}</h2>
+        <button class="kodland-modal-close" type="button" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="kodland-modal-body">
+        <p class="kodland-report-status">Consultando el curso y las lecciones realizadas…</p>
+        <div class="kodland-report-controls" hidden>
+          <button class="kodland-report-general" type="button" disabled>Generar reporte general</button>
+          <label class="kodland-report-module-label" for="kodland-report-module">Módulo</label>
+          <div class="kodland-report-module-row">
+            <select id="kodland-report-module" disabled></select>
+            <button class="kodland-report-module-button" type="button" disabled>Generar reporte por módulo</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  const close = () => modal.remove();
+  modal.querySelector('.kodland-modal-close').addEventListener('click', close);
+  modal.addEventListener('click', event => { if (event.target === modal) close(); });
+  const escape = event => {
+    if (event.key === 'Escape' && document.getElementById(modal.id)) {
+      close();
+      document.removeEventListener('keydown', escape);
+    }
+  };
+  document.addEventListener('keydown', escape);
+
+  const status = modal.querySelector('.kodland-report-status');
+  const controls = modal.querySelector('.kodland-report-controls');
+  const generalButton = modal.querySelector('.kodland-report-general');
+  const moduleSelect = modal.querySelector('#kodland-report-module');
+  const moduleButton = modal.querySelector('.kodland-report-module-button');
+
+  const generate = async (selectedModule, button) => {
+    const whatsappPhone = modal.reportData?.report.whatsappPhone;
+    const whatsappWindow = whatsappPhone ? window.open('about:blank', '_blank') : null;
+    button.disabled = true;
+    generalButton.disabled = true;
+    moduleButton.disabled = true;
+    status.textContent = 'Generando y descargando el PDF…';
+    try {
+      const filename = await globalThis.KodlandReportGenerator.download(
+        modal.reportData.course,
+        modal.reportData.report,
+        selectedModule
+      );
+      status.textContent = `Descargado: ${filename}. ${whatsappPhone ? 'Se abrió el WhatsApp del acudiente. Adjunta el PDF y pulsa Enviar.' : 'No hay teléfono de acudiente disponible para abrir WhatsApp.'}`;
+      if (whatsappWindow && !whatsappWindow.closed) {
+        const scope = selectedModule ? `del módulo ${selectedModule}` : 'general';
+        const message = `Hola ${modal.reportData.report.studentName}, te comparto tu reporte ${scope} del curso ${modal.reportData.course.curso}.`;
+        whatsappWindow.location.href = `https://api.whatsapp.com/send?phone=${whatsappPhone}&text=${encodeURIComponent(message)}`;
+      }
+    } catch (error) {
+      whatsappWindow?.close();
+      status.textContent = error.message || 'No se pudo generar el PDF.';
+      generalButton.disabled = false;
+      moduleButton.disabled = false;
+    }
+  };
+
+  generalButton.addEventListener('click', () => generate(null, generalButton));
+  moduleButton.addEventListener('click', () => generate(Number(moduleSelect.value), moduleButton));
+
+  loadStudentReportData(studentId, studentData, parentPhone).then(data => {
+    if (!document.body.contains(modal)) return;
+    modal.reportData = data;
+    moduleSelect.innerHTML = data.report.modules.map(module =>
+      `<option value="${Number(module.numero)}">M${Number(module.numero)} · ${escapeHtml(module.titulo)}</option>`
+    ).join('');
+    status.textContent = `${data.report.modules.length} módulo(s) disponible(s) hasta la fecha.${data.report.whatsappPhone ? '' : ' No encontré un teléfono propio del alumno; el PDF se podrá descargar, pero no abriré el WhatsApp del acudiente.'}`;
+    controls.hidden = false;
+    generalButton.disabled = false;
+    moduleSelect.disabled = false;
+    moduleButton.disabled = false;
+  }).catch(error => {
+    status.textContent = error.message || 'No se pudieron cargar los datos del reporte.';
+  });
+}
+
 // Function to display student info with buttons
 function displayStudentInfo(container, studentData, studentId) {
   // Remove existing info element if any
@@ -3482,7 +3724,14 @@ function displayStudentInfo(container, studentData, studentId) {
   });
   
   if (!parentPhone) {
-    return; // Don't show buttons if no phone
+    const studentLink = container.querySelector('a[href^="/students/"]');
+    if (!studentLink) return;
+    const buttonsContainer = document.createElement('span');
+    buttonsContainer.className = 'kodland-student-buttons';
+    buttonsContainer.dataset.studentId = studentId;
+    buttonsContainer.appendChild(createStudentReportButton(container, studentId, studentData, parentPhone));
+    studentLink.insertAdjacentElement('afterend', buttonsContainer);
+    return;
   }
   
   // Get language for tooltips
@@ -3584,6 +3833,8 @@ function displayStudentInfo(container, studentData, studentId) {
   // Each button has its own handler with preventDefault and stopPropagation
   
   const formattedPhone = formatPhoneForWhatsApp(parentPhone);
+
+  buttonsContainer.appendChild(createStudentReportButton(container, studentId, studentData, parentPhone));
   
   // Button 1: Open WA (icon only)
   const openWAButton = document.createElement('button');
