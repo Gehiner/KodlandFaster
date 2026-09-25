@@ -10,21 +10,16 @@ seguridad. La forma oficial de permitirlo es **Native Messaging**: un pequeño
 programa local (el "puente") que Chrome puede lanzar y con el que se comunica.
 
 ```
-  Botón en Kodland
-        │  (envía solo una ETIQUETA, ej. "simular")
-        ▼
-  Service worker de la extensión
-        │  chrome.runtime.sendNativeMessage
-        ▼
-  Puente en Python (puente_kodland.py)
-        │  busca la etiqueta en su LISTA BLANCA
-        ▼
-  Ejecuta el .bat correspondiente (en una ventana nueva)
+Botón de la extensión → Service worker → Native Messaging → puente Python
+  acciones del calificador: etiqueta permitida → .bat en una ventana nueva
+  reporte PDF: datos tipados y validados → genera_reporte.py en proceso aparte
 ```
 
-La extensión **nunca** manda comandos ni rutas: solo etiquetas (`simular`,
-`calificar`, `probar_ia`, …). El puente tiene una lista fija de etiquetas
-permitidas y rechaza cualquier otra. Todo ocurre en tu PC, sin internet.
+Las acciones del calificador envían etiquetas (`simular`, `calificar`,
+`probar_ia`, …). El reporte individual envía los datos del alumno, el nombre
+permitido de la plantilla `curso_*.json` y, opcionalmente, el número de módulo.
+El puente valida esos campos, no acepta comandos ni rutas arbitrarias y lanza
+la generación Python en una ventana separada. Todo ocurre en tu PC.
 
 ## Instalación (una sola vez)
 
@@ -43,6 +38,14 @@ permitidas y rechaza cualquier otra. Todo ocurre en tu PC, sin internet.
 4. Entra a `https://bo.kodland.org/`, pulsa el botón flotante **🎓 Calificador**
    (abajo a la derecha) y luego **🔌 Probar puente**. Debe responder
    *"puente activo"*.
+
+Para generar reportes desde los botones de cada alumno, Playwright debe estar
+instalado en el mismo Python que usa el puente. Si aún no está instalado:
+
+```bat
+py -3 -m pip install playwright
+py -3 -m playwright install chromium
+```
 
 ## Uso
 
@@ -81,3 +84,5 @@ quedan por si quieres reinstalarlo).
 - Vuelve a correr `instalar_puente.bat` con el ID correcto y recarga la extensión.
 - Mira `puente.log` (se crea en esta carpeta) para ver qué recibió el puente.
 - Confirma que Python está instalado (`python --version`).
+- Si los botones Python del reporte no generan el PDF, comprueba Playwright con
+  el mismo intérprete (`py -3 -m pip show playwright`) y vuelve a instalarlo si falta.
