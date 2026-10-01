@@ -4,7 +4,7 @@
 
 **Extensión de Chrome y herramientas Python para automatizar el trabajo diario de los tutores en el backoffice de Kodland**
 
-[![Release](https://img.shields.io/badge/release-v1.0.0-blue?style=for-the-badge&logo=github)](https://github.com/Gehiner/KodlandFaster/releases/tag/v1.0.0)
+[![Release](https://img.shields.io/badge/release-v1.1.0-blue?style=for-the-badge&logo=github)](https://github.com/Gehiner/KodlandFaster/releases/tag/v1.1.0)
 [![Manifest](https://img.shields.io/badge/manifest-v1.1.0-orange?style=for-the-badge)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 [![Chrome](https://img.shields.io/badge/Chrome-Manifest_V3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](#)
@@ -35,13 +35,13 @@
 | ✅ **Calificador** | Simulación/calificación de tareas y comentarios con plantillas o IA | `Python` · `Playwright` |
 | 📄 **Generador de reportes** | Reportes de desarrollo y boletines PDF a partir del progreso de Kodland | `Python` · `Playwright` |
 
-> El release publicado es [**Kodland Tutor Assistant v1.0.0**](https://github.com/Gehiner/KodlandFaster/releases/tag/v1.0.0). El `manifest.json` de la rama actual declara la versión `1.1.0`; consulta el release para conocer exactamente qué archivos y funciones incluye cada versión.
+> El release preparado es **Kodland Tutor Assistant v1.1.0**. Al publicarlo, estará disponible en [GitHub Releases](https://github.com/Gehiner/KodlandFaster/releases/tag/v1.1.0). El `manifest.json` declara esta versión.
 
 ---
 
 ## 🚀 Instalar la extensión
 
-1. Descarga el ZIP del [release v1.0.0](https://github.com/Gehiner/KodlandFaster/releases/tag/v1.0.0) o clona/descarga este repositorio.
+1. Descarga el ZIP del [release v1.1.0](https://github.com/Gehiner/KodlandFaster/releases/tag/v1.1.0) cuando esté publicado, o clona/descarga este repositorio.
 2. Descomprime el proyecto si descargaste un ZIP.
 3. Abre `chrome://extensions` en Chrome y activa **Modo de desarrollador**.
 4. Pulsa **Cargar extensión sin empaquetar** y selecciona la carpeta raíz que contiene `manifest.json`.
@@ -60,7 +60,7 @@ En páginas de grupos, la extensión muestra botones junto a cada alumno y accio
 - 📢 Enviar avisos grupales para la clase, graduación, bienvenida y grabaciones.
 - ⚙️ Configurar el nombre del tutor y las plantillas de mensajes desde el botón de configuración.
 - 📄 Abrir un modal de reportes con generación general o por módulo mediante Python.
-- ✅ Revisar y calificar desde el reporte las tareas pendientes del grupo.
+- ✅ Calificar únicamente las tareas pendientes listadas en el reporte grupal, con verificación de estado y seguimiento del lote.
 
 > Los mensajes de WhatsApp quedan preparados para que el tutor los revise y los envíe. El PDF generado por Python se abre localmente; para compartirlo hay que adjuntarlo manualmente al chat.
 
@@ -78,6 +78,8 @@ La calificación se procesa en segundo plano, sin abrir una pestaña visible. El
 <summary><strong>🐍 Reportes Python desde la extensión</strong> (haz clic para expandir)</summary>
 
 La generación de reportes desde el modal necesita **Python**, **Playwright** y el **puente Native Messaging** instalado. En el botón de instalación del puente, pega el ID actual de la extensión. Si reinstalas la extensión sin empaquetar y cambia su ID, vuelve a instalar el puente con el nuevo ID.
+
+El botón **Calificar las tareas del reporte** envía a Python solo las tareas listadas. Python vuelve a comprobar que cada tarea siga pendiente antes de aplicar **Nota Max.**; omite las que hayan cambiado de estado. El modal muestra el avance y el resultado detallado se guarda en `calificador/registros/calificacion_reporte_<job_id>.log`.
 
 La acción de reporte individual envía al puente una plantilla permitida y datos del reporte; **el puente no acepta comandos ni rutas arbitrarias**. Los PDF se guardan bajo:
 
