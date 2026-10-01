@@ -47,10 +47,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg || msg.tipo !== 'calificador') return;  // no es para nosotros
   try {
     const nativeMessage = { action: msg.action };
-    if (msg.action === 'generar_reporte_python') {
+    if (msg.action === 'generar_reporte_python' || msg.action === 'calificar_reporte_tareas' || msg.action === 'estado_calificacion_reporte') {
       const senderUrl = new URL(sender.url || '');
       if (senderUrl.origin !== 'https://bo.kodland.org' || !senderUrl.pathname.startsWith('/groups/')) {
-        sendResponse({ ok: false, error: 'El reporte Python solo se puede solicitar desde un grupo de Kodland.' });
+        sendResponse({ ok: false, error: 'Esta acción solo se puede solicitar desde un grupo de Kodland.' });
         return false;
       }
       nativeMessage.payload = msg.payload;

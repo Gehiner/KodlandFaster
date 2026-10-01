@@ -46,6 +46,7 @@ ACCIONES = {
 }
 
 CREATE_NEW_CONSOLE = 0x00000010  # abre el .bat en su propia ventana visible
+CREATE_NO_WINDOW = 0x08000000
 
 
 def log(texto):
@@ -282,6 +283,110 @@ def iniciar_reporte_python(payload):
         return {"ok": False, "error": str(error)}
 
 
+def iniciar_calificacion_reporte(payload):
+    """Encola exclusivamente las tareas que estaban listadas en el reporte."""
+    if not isinstance(payload, dict):
+        return {"ok": False, "error": "Faltan los datos de las tareas seleccionadas."}
+    group_id = texto_seguro(payload.get("group_id"), 20)
+    tasks = payload.get("tasks")
+    if not group_id.isdigit():
+        return {"ok": False, "error": "El ID del grupo no es válido."}
+    if not isinstance(tasks, list) or not tasks or len(tasks) > 500:
+        return {"ok": False, "error": "La lista de tareas está vacía o supera el límite permitido."}
+
+    normalized = []
+    seen = set()
+    pending_statuses = {"TASK_SUBMITTED", "TASK_SUBMITTED_LATE", "TASK_NOT_GRADED"}
+    for task in tasks:
+        if not isinstance(task, dict):
+            return {"ok": False, "error": "La selección contiene una tarea inválida."}
+        task_id = texto_seguro(task.get("task_id"), 20)
+        student_id = texto_seguro(task.get("student_id"), 20)
+        lesson_id = texto_seguro(task.get("lesson_id"), 20)
+        source = texto_seguro(task.get("source"), 20)
+        status = texto_seguro(task.get("status_key"), 40)
+        if not (task_id.isdigit() and student_id.isdigit() and lesson_id.isdigit()):
+            return {"ok": False, "error": "Una tarea no tiene IDs válidos; no se inició ninguna calificación."}
+        if source not in ("class", "homework") or status not in pending_statuses:
+            return {"ok": False, "error": "La selección contiene una tarea no pendiente o sin tipo identificable."}
+        key = (task_id, student_id)
+        if key in seen:
+            continue
+        seen.add(key)
+        normalized.append({
+            "task_id": task_id,
+            "student_id": student_id,
+            "lesson_id": lesson_id,
+            "source": source,
+            "lesson_label": texto_seguro(task.get("lesson_label"), 80),
+            "task_name": texto_seguro(task.get("task_name"), 200),
+            "student_name": texto_seguro(task.get("student_name"), 160),
+            "status_key": status,
+            "current_grade": numero_seguro(task.get("current_grade")),
+            "max_grade": numero_seguro(task.get("max_grade"), maximo=100000)
+        })
+
+    job_id = uuid.uuid4().hex
+    job_dir = os.path.join(tempfile.gettempdir(), "kodland_grade_jobs")
+    os.makedirs(job_dir, exist_ok=True)
+    job_path = os.path.join(job_dir, job_id + ".json")
+    status_path = os.path.join(job_dir, job_id + ".status.json")
+    log_dir = os.path.join(CALIFICADOR_DIR, "registros")
+    os.makedirs(log_dir, exist_ok=True)
+    job_log_path = os.path.join(log_dir, f"calificacion_reporte_{job_id}.log")
+    job = {"group_id": group_id, "language": payload.get("language", "es"), "tasks": normalized}
+    try:
+        with open(job_path, "w", encoding="utf-8") as fh:
+            json.dump(job, fh, ensure_ascii=False)
+        with open(status_path, "w", encoding="utf-8") as fh:
+            json.dump({
+                "ok": True, "job_id": job_id, "state": "queued", "total": len(normalized),
+                "completed": 0, "graded": 0, "skipped": 0, "errors": 0,
+                "current": "Preparando el navegador de revisión"
+            }, fh, ensure_ascii=False)
+        script = os.path.join(CALIFICADOR_DIR, "calificador_kodland.py")
+        with open(job_log_path, "a", encoding="utf-8") as output:
+            subprocess.Popen(
+                [sys.executable, script, "--calificar-reporte-job", job_id],
+                cwd=CALIFICADOR_DIR,
+                creationflags=CREATE_NO_WINDOW,
+                stdin=subprocess.DEVNULL,
+                stdout=output,
+                stderr=subprocess.STDOUT,
+                close_fds=True,
+            )
+        log(f"calificación desde reporte encolada: {job_id} ({len(normalized)} tareas)")
+        return {
+            "ok": True,
+            "queued": True,
+            "job_id": job_id,
+            "task_count": len(normalized),
+            "log_path": job_log_path,
+            "mensaje": f"Se inició la calificación de {len(normalized)} tareas del reporte."
+        }
+    except Exception as error:
+        try:
+            os.remove(job_path)
+        except OSError:
+            pass
+        log(f"error iniciando calificación desde reporte {job_id}: {error}")
+        return {"ok": False, "error": str(error)}
+
+
+def consultar_estado_calificacion(payload):
+    job_id = texto_seguro((payload or {}).get("job_id"), 32)
+    if not re.fullmatch(r"[a-f0-9]{32}", job_id):
+        return {"ok": False, "error": "El identificador de ejecución no es válido."}
+    path = os.path.join(tempfile.gettempdir(), "kodland_grade_jobs", job_id + ".status.json")
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except FileNotFoundError:
+        return {"ok": False, "error": "No encontré el estado de esta ejecución."}
+    except Exception as error:
+        return {"ok": False, "error": f"No pude leer el progreso: {error}"}
+
+
 def ejecutar_reporte_job(job_id):
     if not re.fullmatch(r"[a-f0-9]{32}", job_id or ""):
         print("ID de trabajo no válido.")
@@ -317,6 +422,10 @@ def ejecutar_accion(accion, mensaje=None):
         return {"ok": True, "mensaje": "puente activo"}
     if accion == "generar_reporte_python":
         return iniciar_reporte_python((mensaje or {}).get("payload"))
+    if accion == "calificar_reporte_tareas":
+        return iniciar_calificacion_reporte((mensaje or {}).get("payload"))
+    if accion == "estado_calificacion_reporte":
+        return consultar_estado_calificacion((mensaje or {}).get("payload"))
     if accion not in ACCIONES:
         log(f"acción NO permitida: {accion!r}")
         return {"ok": False, "error": f"acción no permitida: {accion}"}

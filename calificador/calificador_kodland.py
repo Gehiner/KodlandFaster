@@ -45,9 +45,11 @@ import datetime as dt
 import difflib
 import html as _html
 import json
+import math
 import random
 import re
 import sys
+import tempfile
 import time
 import traceback
 import urllib.error
@@ -994,6 +996,203 @@ def pulsar_nota_max(pagina, ficha):
         except Exception:
             pass
     return verificado
+
+
+def _tareas_de_respuesta(cuerpo):
+    if isinstance(cuerpo, list):
+        return cuerpo
+    if isinstance(cuerpo, dict):
+        for clave in ("tasks", "data", "results"):
+            valor = cuerpo.get(clave)
+            if isinstance(valor, list):
+                return valor
+        return [cuerpo]
+    return []
+
+
+def _buscar_tarea_por_id(cuerpo, task_id):
+    for task in _tareas_de_respuesta(cuerpo):
+        if not isinstance(task, dict):
+            continue
+        candidato = task.get("task_id") or task.get("id")
+        if str(candidato) == str(task_id):
+            return task
+    return None
+
+
+def _numero_calificacion(value, default=0):
+    try:
+        number = float(value)
+        return number if math.isfinite(number) else default
+    except (TypeError, ValueError):
+        return default
+
+
+def calificar_tareas_del_reporte(job_id):
+    """Procesa solo los task_id elegidos en el reporte y aún pendientes en Kodland."""
+    if not re.fullmatch(r"[a-f0-9]{32}", job_id or ""):
+        return 2
+    job_dir = Path(tempfile.gettempdir()) / "kodland_grade_jobs"
+    job_path = job_dir / f"{job_id}.json"
+    status_path = job_dir / f"{job_id}.status.json"
+    log_path = DIR_REGISTROS / f"calificacion_reporte_{job_id}.log"
+    status_data = {"ok": True, "job_id": job_id, "state": "queued", "total": 0,
+                   "completed": 0, "graded": 0, "skipped": 0, "errors": 0,
+                   "current": "Preparando la revisión"}
+
+    def update_status(**changes):
+        status_data.update(changes)
+        status_path.parent.mkdir(parents=True, exist_ok=True)
+        last_error = None
+        for _attempt in range(5):
+            try:
+                with open(status_path, "w", encoding="utf-8") as status_file:
+                    json.dump(status_data, status_file, ensure_ascii=False)
+                    status_file.flush()
+                return
+            except OSError as error:
+                last_error = error
+                time.sleep(0.05)
+        print(f"No pude actualizar el estado del lote: {last_error}", flush=True)
+
+    def job_log(texto):
+        linea = f"{dt.datetime.now().isoformat(timespec='seconds')}  {texto}\n"
+        try:
+            DIR_REGISTROS.mkdir(parents=True, exist_ok=True)
+            with open(log_path, "a", encoding="utf-8") as fh:
+                fh.write(linea)
+        except Exception:
+            pass
+
+    try:
+        job = json.loads(job_path.read_text(encoding="utf-8"))
+        group_id = str(job.get("group_id") or "")
+        tasks = job.get("tasks") or []
+        language = job.get("language") if job.get("language") in ("es", "en", "pt", "fr", "it", "ru", "tr", "id", "pl") else "es"
+        if not group_id.isdigit() or not tasks:
+            job_log("ERROR: trabajo sin grupo o sin tareas.")
+            update_status(state="failed", current="El lote no tiene grupo o tareas válidas")
+            return 2
+        update_status(state="running", total=len(tasks), current="Abriendo sesión de Kodland")
+    except Exception as error:
+        job_log(f"ERROR leyendo la selección: {error}")
+        update_status(state="failed", current=f"No se pudo leer el trabajo: {error}")
+        return 2
+
+    config = cargar_config()
+    profesor_id = str(config.get("profesor_id") or "").strip()
+    global URL_PROFES, PAGINA_PRINCIPAL
+    URL_PROFES = f"{BASE}/teachers/{profesor_id}" if profesor_id.isdigit() else None
+    DIR_PERFIL.mkdir(parents=True, exist_ok=True)
+    browser_context = None
+    hechas = omitidas = errores = 0
+    pendientes_validos = {"TASK_SUBMITTED", "TASK_SUBMITTED_LATE", "TASK_NOT_GRADED"}
+    bases = ("chrome", "msedge", None)
+
+    try:
+        with sync_playwright() as pw:
+            ultimo_error = None
+            for canal in bases:
+                try:
+                    opciones = {"headless": True, "no_viewport": True}
+                    if canal:
+                        opciones["channel"] = canal
+                    browser_context = pw.chromium.launch_persistent_context(str(DIR_PERFIL), **opciones)
+                    job_log(f"Navegador headless iniciado ({canal or 'chromium'}).")
+                    break
+                except Exception as error:
+                    ultimo_error = error
+                    browser_context = None
+            if browser_context is None:
+                job_log(f"ERROR iniciando navegador: {ultimo_error}")
+                update_status(state="failed", current="No se pudo iniciar el navegador de revisión")
+                return 2
+
+            browser_context.set_default_timeout(30000)
+            bo_page = browser_context.pages[0] if browser_context.pages else browser_context.new_page()
+            instalar_captura(bo_page)
+            try:
+                restaurar_sesion(browser_context)
+            except Exception:
+                pass
+            try:
+                bo_page.goto(f"{BASE}/groups/{group_id}?tab=3", wait_until="domcontentloaded", timeout=45000)
+                bo_page.wait_for_timeout(2500)
+            except Exception as error:
+                job_log(f"ERROR abriendo el grupo {group_id}: {error}")
+                update_status(state="failed", current="No se pudo abrir el grupo de Kodland")
+                return 2
+            PAGINA_PRINCIPAL = bo_page
+            job_log(f"Selección iniciada: {len(tasks)} tareas. El alcance queda limitado a estos IDs.")
+            update_status(current="Revisando tareas seleccionadas")
+
+            task_page = browser_context.new_page()
+            lang_paths = {"es": "es", "en": "en", "pt": "pt", "fr": "fr", "it": "it", "ru": "ru", "tr": "tr", "id": "id", "pl": "pl"}
+            for indice, seleccion in enumerate(tasks, 1):
+                student_id = str(seleccion.get("student_id") or "")
+                task_id = str(seleccion.get("task_id") or "")
+                lesson_id = str(seleccion.get("lesson_id") or "")
+                origen = seleccion.get("source")
+                texto = seleccion.get("task_name") or "tarea sin nombre"
+                alumno = seleccion.get("student_name") or f"alumno {student_id}"
+                if not (student_id.isdigit() and task_id.isdigit() and lesson_id.isdigit() and origen in ("class", "homework")):
+                    errores += 1
+                    job_log(f"[{indice}/{len(tasks)}] ERROR: IDs inválidos; entrada omitida.")
+                    update_status(completed=indice, errors=errores, current=f"ID inválido · tarea {indice}/{len(tasks)}")
+                    continue
+
+                update_status(current=f"Verificando {seleccion.get('lesson_label', '')} · {texto} ({indice}/{len(tasks)})")
+                ruta = f"/students/{student_id}/lesson/{lesson_id}/get_progress_for_{origen}_tasks/"
+                respuesta, _intentos = api_llamar_multi([bo_page], ruta)
+                if respuesta.get("status") != 200:
+                    errores += 1
+                    job_log(f"[{indice}/{len(tasks)}] ERROR consultando estado actual de task {task_id}: HTTP {respuesta.get('status')}.")
+                    update_status(completed=indice, errors=errores, current=f"No se pudo verificar · tarea {indice}/{len(tasks)}")
+                    continue
+                tarea_actual = _buscar_tarea_por_id(respuesta.get("cuerpo"), task_id)
+                if not tarea_actual:
+                    omitidas += 1
+                    job_log(f"[{indice}/{len(tasks)}] OMITIDA {alumno} · {texto}: task_id ya no aparece en la lección.")
+                    update_status(completed=indice, skipped=omitidas, current=f"Omitida (ya no aparece) · {indice}/{len(tasks)}")
+                    continue
+                estado_actual = tarea_actual.get("task_status_key") or tarea_actual.get("status_key")
+                maximo = tarea_actual.get("task_max_grade")
+                if estado_actual not in pendientes_validos or not (_numero_calificacion(maximo) > 0):
+                    omitidas += 1
+                    job_log(f"[{indice}/{len(tasks)}] OMITIDA {alumno} · {texto}: ya no está pendiente ({estado_actual}).")
+                    update_status(completed=indice, skipped=omitidas, current=f"Omitida (ya no pendiente) · {indice}/{len(tasks)}")
+                    continue
+
+                url_tarea = f"https://learn.kodland.org/{lang_paths[language]}/task/{task_id}/check/{student_id}"
+                try:
+                    task_page.goto(url_tarea, wait_until="domcontentloaded", timeout=45000)
+                    ficha = {"texto": f"{_numero_calificacion(tarea_actual.get('task_current_grade')):.0f}/{_numero_calificacion(maximo):.0f}"}
+                    verificada = pulsar_nota_max(task_page, ficha)
+                    hechas += 1
+                    resultado = "nota máxima verificada" if verificada else "nota máxima aplicada; verificación visual no concluyente"
+                    job_log(f"[{indice}/{len(tasks)}] CALIFICADA {alumno} · {seleccion.get('lesson_label', '')} · {texto} · {resultado}.")
+                    update_status(completed=indice, graded=hechas, current=f"Calificada · {indice}/{len(tasks)}")
+                except Exception as error:
+                    errores += 1
+                    job_log(f"[{indice}/{len(tasks)}] ERROR {alumno} · {texto}: {error}")
+                    update_status(completed=indice, errors=errores, current=f"Error · {indice}/{len(tasks)}")
+            job_log(f"Terminado: {hechas} calificadas, {omitidas} omitidas por estado cambiado, {errores} errores. Log: {log_path}")
+            update_status(
+                state="completed_with_errors" if errores else "completed",
+                completed=len(tasks), graded=hechas, skipped=omitidas, errors=errores,
+                current=f"Finalizado: {hechas} calificadas, {omitidas} omitidas y {errores} errores"
+            )
+            return 0 if errores == 0 else 1
+    except Exception as error:
+        job_log(f"ERROR general en el worker: {error}")
+        update_status(state="failed", current=f"Error general: {error}")
+        return 2
+    finally:
+        if browser_context:
+            try:
+                browser_context.close()
+            except Exception:
+                pass
 
 
 # ------------------------------ comentarios ------------------------------
@@ -3089,6 +3288,9 @@ def modo_diagnostico(page):
 # ----------------------------------- main -----------------------------------
 
 def main():
+    if len(sys.argv) == 3 and sys.argv[1] == "--calificar-reporte-job":
+        raise SystemExit(calificar_tareas_del_reporte(sys.argv[2]))
+
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:

@@ -701,6 +701,33 @@
   margin: 8px 0;
 }
 
+.kodland-grading-progress {
+  margin: 12px 0 16px;
+  padding: 12px;
+  border: 1px solid #3d4a24;
+  border-radius: 8px;
+  background: #20251a;
+}
+
+.kodland-grading-progress[hidden] {
+  display: none;
+}
+
+.kodland-grading-progress-bar {
+  display: block;
+  width: 100%;
+  height: 12px;
+  accent-color: #b9df45;
+}
+
+.kodland-grading-progress-text {
+  margin: 8px 0 0;
+  color: #e5e7eb;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 /* Scrollbar styling for modal */
 .kodland-modal-body::-webkit-scrollbar {
   width: 8px;

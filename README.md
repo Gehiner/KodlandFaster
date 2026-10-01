@@ -19,6 +19,7 @@
 - [Componentes](#-componentes)
 - [Instalar la extensión](#-instalar-la-extensión)
 - [Funciones de la extensión](#-funciones-de-la-extensión)
+  - [Calificar desde el reporte del grupo](#calificar-desde-el-reporte-del-grupo)
   - [Reportes Python desde la extensión](#reportes-python-desde-la-extensión)
 - [Calificador de tareas](#-calificador-de-tareas)
 - [Configuración y datos privados](#-configuración-y-datos-privados)
@@ -59,8 +60,19 @@ En páginas de grupos, la extensión muestra botones junto a cada alumno y accio
 - 📢 Enviar avisos grupales para la clase, graduación, bienvenida y grabaciones.
 - ⚙️ Configurar el nombre del tutor y las plantillas de mensajes desde el botón de configuración.
 - 📄 Abrir un modal de reportes con generación general o por módulo mediante Python.
+- ✅ Revisar y calificar desde el reporte las tareas pendientes del grupo.
 
 > Los mensajes de WhatsApp quedan preparados para que el tutor los revise y los envíe. El PDF generado por Python se abre localmente; para compartirlo hay que adjuntarlo manualmente al chat.
+
+### Calificar desde el reporte del grupo
+
+1. En una página de grupo, pulsa **Reporte calificación** para listar las tareas pendientes por alumno.
+2. Revisa la selección y pulsa **Calificar las tareas del reporte (N)**. El botón actúa solo sobre las tareas mostradas en ese reporte; no ejecuta **Calificar TODO**.
+3. Confirma la acción. Python vuelve a consultar cada tarea en Kodland y solo aplica **Nota Max.** si todavía aparece pendiente. Si ya cambió de estado, la omite.
+
+La calificación se procesa en segundo plano, sin abrir una pestaña visible. El modal muestra cuántas tareas están procesadas, calificadas, omitidas o con error. El log detallado queda en `calificador/registros/calificacion_reporte_<job_id>.log`.
+
+> Esta acción usa **Nota Max.** para las tareas seleccionadas. Revisa el reporte antes de confirmar y comprueba el resultado del lote en el progreso o en su log.
 
 <details>
 <summary><strong>🐍 Reportes Python desde la extensión</strong> (haz clic para expandir)</summary>

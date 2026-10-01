@@ -3208,11 +3208,14 @@ async function fetchStudentTaskAlerts(studentId) {
         fetchHomeworkTasksProgress(studentId, lessonId)
       ]);
       const label = lessonLabelMap[String(lessonId)] || `Lección ${i + batchIndex + 1}`;
-      return { classTasks, homeworkTasks, label };
+      return { classTasks, homeworkTasks, label, lessonId };
     }));
 
-    batchResults.forEach(({ classTasks, homeworkTasks, label }) => {
-      [...extractTasksArray(classTasks), ...extractTasksArray(homeworkTasks)].forEach(task => {
+    batchResults.forEach(({ classTasks, homeworkTasks, label, lessonId }) => {
+      [
+        ...extractTasksArray(classTasks).map(task => ({ task, source: 'class' })),
+        ...extractTasksArray(homeworkTasks).map(task => ({ task, source: 'homework' }))
+      ].forEach(({ task, source }) => {
         const statusKey = task.task_status_key || task.status_key || '';
         const taskName = task.task_title || task.title || task.name || task.task_name || 'Tarea sin nombre';
         const taskId = task.task_id || task.id || null;
@@ -3228,7 +3231,17 @@ async function fetchStudentTaskAlerts(studentId) {
         if (statusKey === 'TASK_SUBMITTED' || statusKey === 'TASK_SUBMITTED_LATE' || statusKey === 'TASK_NOT_GRADED') {
           if (!isTheoryTask) {
             pendingGradingCount++;
-            pendingGradingTasks.push({ name: taskName, label, taskId });
+            pendingGradingTasks.push({
+              name: taskName,
+              label,
+              taskId: taskId == null ? null : String(taskId),
+              studentId: String(studentId),
+              lessonId: String(lessonId),
+              statusKey,
+              source,
+              currentGrade: Number(task.task_current_grade ?? task.current_grade ?? 0) || 0,
+              maxGrade: Number(task.task_max_grade) || 0
+            });
           }
         } else if (statusKey === 'TASK_NOT_SUBMITTED') {
           if (!isTheoryTask) {
@@ -3266,6 +3279,7 @@ async function fetchGroupGradingReport(onProgress = null) {
         report.push({
           name: cleanName,
           studentId: student.id,
+          groupId: extractGroupId(),
           pendingGradingCount: alerts.pendingGradingCount,
           pendingGradingTasks: alerts.pendingGradingTasks
         });
@@ -3290,6 +3304,15 @@ function showGroupGradingReportModal(report) {
 
   const totalPending = report.reduce((sum, r) => sum + r.pendingGradingCount, 0);
   const withPending = report.filter(r => r.pendingGradingCount > 0);
+  const selectedTasks = withPending.flatMap(student => student.pendingGradingTasks.map(task => ({
+    ...task,
+    studentId: student.studentId,
+    studentName: student.name,
+    groupId: student.groupId
+  })));
+  const missingTaskIds = selectedTasks.some(task => !/^\d+$/.test(String(task.taskId || '')) ||
+    !/^\d+$/.test(String(task.studentId || '')) || !/^\d+$/.test(String(task.lessonId || '')) ||
+    !['class', 'homework'].includes(task.source));
 
   // Same URL pattern used by the per-student tasks modal
   const langUrlMap = { es: 'es', en: 'en', ru: 'ru', fr: 'fr', tr: 'tr', id: 'id', it: 'it', pl: 'pl', pt: 'pt' };
@@ -3321,10 +3344,15 @@ function showGroupGradingReportModal(report) {
     <div class="kodland-modal-content">
       <div class="kodland-modal-header">
         <h2>📊 Reporte de calificación del grupo (${totalPending} pendientes en total)</h2>
-        <button id="kodland-calificar-todo-btn" class="kodland-toolbar-btn">✅ Calificar</button>
+        <button id="kodland-calificar-todo-btn" class="kodland-toolbar-btn" ${!selectedTasks.length || missingTaskIds ? 'disabled' : ''}>✅ Calificar las tareas del reporte (${selectedTasks.length})</button>
         <button class="kodland-modal-close">&times;</button>
       </div>
       <div class="kodland-modal-body">
+        ${missingTaskIds ? '<p class="kodland-no-tasks">No se puede iniciar: faltan IDs de tarea, alumno o lección para una o más filas.</p>' : ''}
+        <div class="kodland-grading-progress" hidden>
+          <progress class="kodland-grading-progress-bar" max="1" value="0"></progress>
+          <p class="kodland-grading-progress-text" aria-live="polite"></p>
+        </div>
         ${rowsHtml}
       </div>
     </div>
@@ -3333,23 +3361,101 @@ function showGroupGradingReportModal(report) {
   document.body.appendChild(modal);
   modal.querySelector('.kodland-modal-close').addEventListener('click', () => modal.remove());
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-  // kodland-calificar-todo-btn
-  modal.querySelector('#kodland-calificar-todo-btn')
-  .addEventListener('click', async () => {
+  const gradeSelectedButton = modal.querySelector('#kodland-calificar-todo-btn');
+  const progressPanel = modal.querySelector('.kodland-grading-progress');
+  const progressBar = modal.querySelector('.kodland-grading-progress-bar');
+  const progressText = modal.querySelector('.kodland-grading-progress-text');
 
-      try {
+  const watchGradingJob = (jobId, startedAt = Date.now(), failedPolls = 0) => {
+    if (!document.body.contains(modal)) return;
+    if (Date.now() - startedAt > 15 * 60 * 1000) {
+      progressText.textContent = 'El seguimiento tardó más de 15 minutos. Comprueba el log antes de iniciar otra ejecución.';
+      gradeSelectedButton.disabled = false;
+      gradeSelectedButton.textContent = `Calificar las tareas del reporte (${selectedTasks.length})`;
+      return;
+    }
 
-          const respuesta =
-              await window.KodlandCalificador.ejecutar("calificar");
-
-          console.log(respuesta);
-
-      } catch (e) {
-
-          console.error(e);
-
+    chrome.runtime.sendMessage({
+      tipo: 'calificador',
+      action: 'estado_calificacion_reporte',
+      payload: { job_id: jobId }
+    }, response => {
+      if (!document.body.contains(modal)) return;
+      if (chrome.runtime.lastError || !response?.ok) {
+        if (failedPolls >= 4) {
+          progressText.textContent = response?.error || chrome.runtime.lastError?.message || 'No pude consultar el progreso. Comprueba el log del job.';
+          gradeSelectedButton.disabled = false;
+          gradeSelectedButton.textContent = `Calificar las tareas del reporte (${selectedTasks.length})`;
+          return;
+        }
+        gradingPollTimer = setTimeout(() => watchGradingJob(jobId, startedAt, failedPolls + 1), 2500);
+        return;
       }
 
+      const total = Number(response.total) || selectedTasks.length;
+      const completed = Math.min(total, Number(response.completed) || 0);
+      progressBar.max = total || 1;
+      progressBar.value = completed;
+      progressText.textContent = `${completed}/${total} procesadas · ${Number(response.graded) || 0} calificadas · ${Number(response.skipped) || 0} omitidas · ${Number(response.errors) || 0} errores. ${response.current || ''}`;
+
+      if (['completed', 'completed_with_errors', 'failed'].includes(response.state)) {
+        gradeSelectedButton.disabled = response.state === 'completed';
+        gradeSelectedButton.textContent = response.state === 'completed'
+          ? '✅ Lote terminado'
+          : `Reintentar pendientes (${selectedTasks.length})`;
+        return;
+      }
+      gradingPollTimer = setTimeout(() => watchGradingJob(jobId, startedAt, 0), 2000);
+    });
+  };
+
+  gradeSelectedButton.addEventListener('click', async () => {
+    if (!selectedTasks.length || missingTaskIds) return;
+    const confirmed = window.confirm(
+      `Se intentará calificar únicamente las ${selectedTasks.length} tareas mostradas en este reporte, usando «Nota Max.». Python volverá a verificar que sigan pendientes. ¿Continuar?`
+    );
+    if (!confirmed) return;
+
+    gradeSelectedButton.disabled = true;
+    gradeSelectedButton.textContent = '⏳ Iniciando lote…';
+    try {
+      const response = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({
+          tipo: 'calificador',
+          action: 'calificar_reporte_tareas',
+          payload: {
+            group_id: report[0]?.groupId || extractGroupId(),
+            language: detectPageLanguage(),
+            tasks: selectedTasks.map(task => ({
+              task_id: String(task.taskId),
+              student_id: String(task.studentId),
+              student_name: task.studentName,
+              lesson_id: String(task.lessonId),
+              lesson_label: task.label,
+              task_name: task.name,
+              status_key: task.statusKey,
+              source: task.source,
+              current_grade: task.currentGrade,
+              max_grade: task.maxGrade
+            }))
+          }
+        }, result => {
+          if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+          else resolve(result);
+        });
+      });
+      if (!response?.ok) throw new Error(response?.error || 'Python no aceptó la selección.');
+      gradeSelectedButton.textContent = '⏳ Calificando selección…';
+      progressPanel.hidden = false;
+      progressBar.max = response.task_count || selectedTasks.length;
+      progressBar.value = 0;
+      progressText.textContent = `0/${progressBar.max} procesadas · 0 calificadas · 0 omitidas · 0 errores. Python está iniciando el navegador headless. Log: ${response.log_path}`;
+      watchGradingJob(response.job_id);
+    } catch (error) {
+      gradeSelectedButton.disabled = false;
+      gradeSelectedButton.textContent = `✅ Calificar las tareas del reporte (${selectedTasks.length})`;
+      alert(error.message || 'No se pudo iniciar la calificación seleccionada.');
+    }
   });
 }
 
@@ -3700,7 +3806,11 @@ function showStudentReportModal(studentId, studentData, parentPhone) {
     </div>`;
   document.body.appendChild(modal);
 
-  const close = () => modal.remove();
+  let gradingPollTimer = null;
+  const close = () => {
+    if (gradingPollTimer) clearTimeout(gradingPollTimer);
+    modal.remove();
+  };
   modal.querySelector('.kodland-modal-close').addEventListener('click', close);
   modal.addEventListener('click', event => { if (event.target === modal) close(); });
   const escape = event => {
