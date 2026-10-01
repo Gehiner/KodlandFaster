@@ -35,13 +35,13 @@
 | ✅ **Calificador** | Simulación/calificación de tareas y comentarios con plantillas o IA | `Python` · `Playwright` |
 | 📄 **Generador de reportes** | Reportes de desarrollo y boletines PDF a partir del progreso de Kodland | `Python` · `Playwright` |
 
-> El release preparado es **Kodland Tutor Assistant v1.1.0**. Al publicarlo, estará disponible en [GitHub Releases](https://github.com/Gehiner/KodlandFaster/releases/tag/v1.1.0). El `manifest.json` declara esta versión.
+> El release publicado es [**Kodland Tutor Assistant v1.1.0**](https://github.com/Gehiner/KodlandFaster/releases/tag/v1.1.0). El `manifest.json` declara esta versión.
 
 ---
 
 ## 🚀 Instalar la extensión
 
-1. Descarga el ZIP del [release v1.1.0](https://github.com/Gehiner/KodlandFaster/releases/tag/v1.1.0) cuando esté publicado, o clona/descarga este repositorio.
+1. Descarga el ZIP del [release v1.1.0](https://github.com/Gehiner/KodlandFaster/releases/tag/v1.1.0) o clona/descarga este repositorio.
 2. Descomprime el proyecto si descargaste un ZIP.
 3. Abre `chrome://extensions` en Chrome y activa **Modo de desarrollador**.
 4. Pulsa **Cargar extensión sin empaquetar** y selecciona la carpeta raíz que contiene `manifest.json`.
