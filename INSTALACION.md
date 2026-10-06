@@ -31,7 +31,7 @@ Asegúrate de que todos los archivos estén en la misma carpeta:
 1. Una vez activado el Modo de Desarrollador, verás nuevos botones en la parte superior
 2. Haz clic en el botón **"Cargar extensión sin empaquetar"** o **"Load unpacked"** (en inglés)
 3. Se abrirá una ventana de explorador de archivos
-4. Navega hasta la carpeta donde está tu proyecto: `C:\Users\Juan Garay\Desktop\KodlandFaster`
+4. Navega hasta la carpeta donde está tu proyecto: `C:\Users\Usuario\Desktop\KodlandFaster`
 5. **Selecciona la carpeta** `KodlandFaster` (NO entres dentro, selecciona la carpeta misma)
 6. Haz clic en **"Seleccionar carpeta"** o **"Select Folder"**
 
